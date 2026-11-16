@@ -40,7 +40,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: success()
         with:
-          name: coliseum-jar
+          name: hustle263-jar
           path: build/libs/*.jar
           if-no-files-found: error
 

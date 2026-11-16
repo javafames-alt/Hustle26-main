@@ -1,6 +1,0 @@
-{
-  "parent": "coliseum:item/mace_skins/frying_pan/the_model",
-  "textures": {
-    "layer0": "coliseum:item/mace_skins/frying_pan/mace"
-  }
-}

@@ -2,9 +2,9 @@
 
 Source: `ZenithSRC-clear/src/main/java/org/zenith/client/modules/impl/combat/CrystalAuraModule.java`,
 `utility/misc/Data3.java` (presets), and `utility/game/Class35.java` (damage).
-The source project is unchanged. The previous Coliseum CrystalAura is not restored.
+The source project is unchanged. The previous Hustle 26.3 CrystalAura is not restored.
 
-The adaptation uses native Coliseum settings and inventory leases, Mojang 26.3 names,
+The adaptation uses native Hustle 26.3 settings and inventory leases, Mojang 26.3 names,
 pre-motion rotation packets / the post-motion hook, and collector-based world rendering.
 Grim is the default; DonutSMP and the donor's unrestricted preset retain their declared values.
 The module starts disabled and saves through ClientConfig.
@@ -19,7 +19,7 @@ anti-mining covers, cobweb fallback, four bound surround layouts, and melee/knoc
 The ClientLevel spawn hook runs after entity insertion. Aura yields while crystal work is active.
 
 Port-specific differences: the original combat logger/AutoTotem diagnostic pipeline is replaced
-by local SLF4J action logs; the local AutoTotem coordinates through Coliseum inventory leases.
+by local SLF4J action logs; the local AutoTotem coordinates through Hustle 26.3 inventory leases.
 Hit-window and knockback estimates use client-visible state and are discarded when observed
 movement disagrees. Mining uses the native game mode's progress and server confirmation instead
 of the donor's forced local block removal. The melee fallback requires an equipped sword/axe;

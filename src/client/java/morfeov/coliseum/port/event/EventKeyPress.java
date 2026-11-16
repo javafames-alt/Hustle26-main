@@ -1,1 +1,0 @@
-package morfeov.coliseum.port.event; public record EventKeyPress(int key,int action) { public int getKey(){return key;} public int getAction(){return action;} }

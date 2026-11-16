@@ -1,0 +1,6 @@
+{
+  "parent": "hustle263:item/mace_skins/frying_pan/the_model",
+  "textures": {
+    "layer0": "hustle263:item/mace_skins/frying_pan/mace"
+  }
+}

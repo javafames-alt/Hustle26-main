@@ -1,6 +1,6 @@
 # Visual and cosmetics class names
 
-Package: `morfeov.coliseum.render.coliseimvisual`.
+Package: `im.yaHustler.render.coliseimvisual`.
 
 | Previous class | Current class |
 | --- | --- |
@@ -31,7 +31,7 @@ Package: `morfeov.coliseum.render.coliseimvisual`.
 Removed 116 generated literal aliases from the visual helpers.
 
 Resource directories use `coliseimvisual` too (images, core shaders, shader includes).
-Cosmetics code and resources use `cosmetics/coliseum`; catalog IDs and replacement
+Cosmetics code and resources use `cosmetics/hustle263`; catalog IDs and replacement
 mappings retain their values so saved cosmetic selections continue to load.
 
 Visual helpers use descriptive method, field and parameter names. Generated

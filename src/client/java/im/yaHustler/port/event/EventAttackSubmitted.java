@@ -1,0 +1,1 @@
+package im.yaHustler.port.event; public record EventAttackSubmitted(net.minecraft.world.entity.Entity target) { public net.minecraft.world.entity.Entity getTarget(){return target;} }

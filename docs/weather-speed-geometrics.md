@@ -13,7 +13,7 @@
 
 ```powershell
 .\gradlew.bat verifyWeatherGeometrics verifyProfiles
-.\gradlew.bat verifyColiseumShaders --args=weather
+.\gradlew.bat verifyHustleShaders --args=weather
 .\gradlew.bat build
 ```
 
