@@ -1,0 +1,17 @@
+.gradle/
+build/
+run/
+logs/
+.codex/
+.idea/
+*.iml
+.vscode/
+out/
+.env
+.env.*
+__pycache__/
+*.pyc
+*.keystore
+*.jks
+hs_err_pid*
+replay_pid*

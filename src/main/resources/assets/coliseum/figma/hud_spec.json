@@ -1,0 +1,184 @@
+{
+    "version":  3,
+    "designFrame":  {
+                        "x":  121,
+                        "y":  232,
+                        "width":  1164,
+                        "height":  850
+                    },
+    "background":  {
+                       "r":  0.11764705926179886,
+                       "g":  0.11764705926179886,
+                       "b":  0.11764705926179886,
+                       "a":  1
+                   },
+    "tokens":  {
+                   "panel":  {
+                                 "r":  0,
+                                 "g":  0,
+                                 "b":  0,
+                                 "a":  232
+                             },
+                   "panelSoft":  {
+                                     "r":  27,
+                                     "g":  27,
+                                     "b":  29,
+                                     "a":  238
+                                 },
+                   "border":  {
+                                  "r":  56,
+                                  "g":  56,
+                                  "b":  56,
+                                  "a":  201
+                              },
+                   "text":  {
+                                "r":  255,
+                                "g":  255,
+                                "b":  255,
+                                "a":  255
+                            },
+                   "muted":  {
+                                 "r":  141,
+                                 "g":  141,
+                                 "b":  141,
+                                 "a":  255
+                             },
+                   "dim":  {
+                               "r":  116,
+                               "g":  116,
+                               "b":  124,
+                               "a":  255
+                           },
+                   "accent":  {
+                                  "r":  168,
+                                  "g":  85,
+                                  "b":  247,
+                                  "a":  255
+                              },
+                   "radius":  14,
+                   "smallRadius":  8,
+                   "headerIcon":  19
+               },
+    "notificationPill":  {
+                             "height":  34,
+                             "radius":  20,
+                             "gap":  10,
+                             "padX":  10,
+                             "padRight":  13,
+                             "icon":  20,
+                             "iconGap":  9,
+                             "dividerW":  14,
+                             "dividerGap":  1,
+                             "textSize":  10.5,
+                             "minWidth":  236,
+                             "maxWidth":  425
+                         },
+    "elements":  {
+                     "logo":  {
+                                  "id":  "logo",
+                                  "x":  848,
+                                  "y":  69,
+                                  "w":  408,
+                                  "h":  32,
+                                  "cornerRadius":  20,
+                                  "labels":  {
+                                                 "user":  "User",
+                                                 "fps":  "150",
+                                                 "time":  "14:88"
+                                             }
+                              },
+                     "info":  {
+                                  "id":  "info",
+                                  "x":  534,
+                                  "y":  327,
+                                  "w":  298,
+                                  "h":  54,
+                                  "cornerRadius":  20,
+                                  "labels":  {
+                                                 "server":  "mc.ghostworld.pw",
+                                                 "ping":  "20MS"
+                                             }
+                              },
+                     "potions":  {
+                                     "id":  "potions",
+                                     "x":  580,
+                                     "y":  152,
+                                     "w":  160,
+                                     "h":  98,
+                                     "cornerRadius":  20,
+                                     "labels":  {
+                                                    "title":  "Effects"
+                                                }
+                                 },
+                     "keybind":  {
+                                     "id":  "keybind",
+                                     "x":  1427,
+                                     "y":  315,
+                                     "w":  148,
+                                     "h":  98,
+                                     "cornerRadius":  20,
+                                     "labels":  {
+                                                    "title":  "HotKeys"
+                                                }
+                                 },
+                     "target_hud":  {
+                                        "id":  "target_hud",
+                                        "x":  889,
+                                        "y":  655,
+                                        "w":  235,
+                                        "h":  64,
+                                        "cornerRadius":  20,
+                                        "labels":  {
+                                                       "title":  "Autist",
+                                                       "value":  "14"
+                                                   }
+                                    },
+                     "notifications":  {
+                                           "id":  "notifications",
+                                           "x":  939,
+                                           "y":  753,
+                                           "w":  305,
+                                           "h":  173,
+                                           "cornerRadius":  20,
+                                           "labels":  {
+                                                          "preview":  "Пример уведомления"
+                                                      }
+                                       },
+                     "xyz_bps":  {
+                                     "id":  "xyz_bps",
+                                     "x":  12,
+                                     "y":  810,
+                                     "w":  200,
+                                     "h":  22,
+                                     "cornerRadius":  8,
+                                     "labels":  {
+                                                    "coords":  "52x 67y 1488z",
+                                                    "bps":  "20BPS"
+                                                }
+                                 },
+                     "information":  {
+                                     "id":  "information",
+                                     "x":  12,
+                                     "y":  810,
+                                     "w":  200,
+                                     "h":  22,
+                                     "cornerRadius":  8,
+                                     "labels":  {
+                                                    "coords":  "52x 67y 1488z",
+                                                    "bps":  "20BPS"
+                                                }
+                                 },
+                     "warden_boost":  {
+                                          "id":  "warden_boost",
+                                          "x":  12,
+                                          "y":  130,
+                                          "w":  200,
+                                          "h":  80,
+                                          "cornerRadius":  20,
+                                          "labels":  {
+
+                                                     }
+                                      }
+                 },
+    "rawNodeCount":  149
+}

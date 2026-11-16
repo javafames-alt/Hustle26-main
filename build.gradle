@@ -1,0 +1,324 @@
+plugins {
+    id 'net.fabricmc.fabric-loom' version "${loom_version}"
+}
+version = project.mod_version
+group = project.maven_group
+base { archivesName = project.archives_base_name }
+repositories { mavenCentral() }
+loom {
+    splitEnvironmentSourceSets()
+    mods {
+        coliseum {
+            sourceSet sourceSets.main
+            sourceSet sourceSets.client
+        }
+    }
+}
+dependencies {
+    include implementation('io.netty:netty-handler-proxy:4.2.16.Final')
+    include implementation('io.netty:netty-codec-socks:4.2.16.Final')
+    implementation files('src/main/resources/META-INF/jars/punchy-2.8e-fabric-26.3.jar')
+    implementation files('src/main/resources/META-INF/jars/ViaFabricPlus-5.1.2.jar',
+        'src/main/resources/META-INF/jars/IAS-9.0.8+26.3-fabric.jar')
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+}
+processResources {
+    exclude '**/__pycache__/**'
+    includeEmptyDirs = false
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') { expand version: project.version }
+}
+tasks.withType(JavaCompile).configureEach {
+    options.release = 25
+    options.encoding = 'UTF-8'
+}
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+    withSourcesJar()
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
+}
+
+// Tests cover module registration, lifecycle, filtering and persisted state.
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.13.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'org.junit.platform:junit-platform-launcher'
+}
+sourceSets.test.compileClasspath += sourceSets.client.output + sourceSets.client.compileClasspath
+sourceSets.test.runtimeClasspath += sourceSets.client.output + sourceSets.client.runtimeClasspath
+tasks.named('test') {
+    useJUnitPlatform()
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    // Run this suite in a normal JVM: the isolated worker fails to load these client tests.
+    exclude 'morfeov/coliseum/config/ClientConfigProfileTest*.class'
+    exclude 'morfeov/coliseum/config/ProfileTestRunner.class'
+    exclude 'morfeov/coliseum/ui/GuiTransformTest.class'
+    exclude 'morfeov/coliseum/ui/GuiMotionTest.class'
+    exclude 'morfeov/coliseum/ui/EventsFeedTest.class'
+    exclude 'morfeov/coliseum/ui/WeatherGeometrics.class'
+    exclude 'morfeov/coliseum/ui/HandFlameImageCheck.class'
+    exclude 'morfeov/coliseum/ui/BackdropImageCheck.class'
+    exclude 'morfeov/coliseum/ui/BackdropRegionTest.class'
+    exclude 'morfeov/coliseum/command/ClientCommandsTest*.class'
+    exclude 'morfeov/coliseum/ui/GuiTextImageCheck.class'
+    exclude 'morfeov/coliseum/ui/PumpkinImageCheck.class'
+    exclude 'morfeov/coliseum/performance/OptimizationTest*.class'
+    exclude 'morfeov/coliseum/combat/AuraRotation.class'
+    exclude 'morfeov/coliseum/combat/CrystalProfileTest.class'
+    exclude 'morfeov/coliseum/combat/SilentRotationTest.class'
+    exclude 'morfeov/coliseum/ui/Interface.class'
+    exclude 'morfeov/coliseum/ui/ColiseumFeaturesTest.class'
+    exclude 'morfeov/coliseum/ui/NewModulesTest.class'
+    exclude 'morfeov/coliseum/ui/CosmeticsInteractionTest.class'
+    exclude 'morfeov/coliseum/ui/NoSlowCheck.class'
+    exclude 'morfeov/coliseum/ui/WebPush.class'
+    exclude 'morfeov/coliseum/ui/ElytraBoosterCheck.class'
+    exclude 'morfeov/coliseum/ui/GrimGlideCheck.class'
+    exclude 'morfeov/coliseum/ui/TextOverflowTest.class'
+    exclude 'morfeov/coliseum/ui/CameraMotionHistoryTest.class'
+    exclude 'morfeov/coliseum/ui/Visual*.class'
+    exclude 'morfeov/coliseum/ui/CustomCrystalTest.class'
+    exclude 'morfeov/coliseum/hud/LyricsLayoutTest*.class'
+    exclude 'morfeov/coliseum/render/music/Music3DSceneTest.class'
+}
+tasks.register('verifyProfiles', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'morfeov.coliseum.config.ProfileTestRunner'
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(25) }
+}
+tasks.named('check') { dependsOn tasks.named('verifyProfiles') }
+
+tasks.register('verifyGuiMotion', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'morfeov.coliseum.ui.GuiMotionTest'
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(25) }
+}
+tasks.named('check') { dependsOn tasks.named('verifyGuiMotion') }
+
+tasks.register('verifyEventsFeed', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'morfeov.coliseum.ui.EventsFeedTest'
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(25) }
+}
+
+tasks.named('check') { dependsOn tasks.named('verifyEventsFeed') }
+
+tasks.register('verifyOptimization', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'morfeov.coliseum.performance.OptimizationTest'
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(25) }
+}
+tasks.named('check') { dependsOn tasks.named('verifyOptimization') }
+
+tasks.register('verifyAuraRotations', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'morfeov.coliseum.combat.AuraRotation'
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(25) }
+}
+tasks.named('check') { dependsOn tasks.named('verifyAuraRotations') }
+
+tasks.register('verifyCrystalAura', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'morfeov.coliseum.combat.CrystalProfileTest'
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(25) }
+}
+tasks.named('check') { dependsOn tasks.named('verifyCrystalAura') }
+tasks.register('verifyColiseumShaders', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'morfeov.coliseum.ui.VisualShaderCheck'
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(25) }
+}
+
+tasks.register('verifyHandsFireShaders', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'morfeov.coliseum.ui.VisualShaderCheck'
+    args 'fire'
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(25) }
+}
+
+tasks.register('verifyBackdropShaders', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'morfeov.coliseum.ui.VisualShaderCheck'
+    args 'gui'
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(25) }
+}
+
+tasks.register('verifyBackdropRegions', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'morfeov.coliseum.ui.BackdropRegionTest'
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(25) }
+}
+
+tasks.register('verifyClientCommands', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'morfeov.coliseum.command.ClientCommandsTest'
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(25) }
+}
+
+tasks.register('verifyBotConfig', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'morfeov.coliseum.bot.BotConfigCheck'
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(25) }
+}
+
+tasks.register('verifyAutoArmor', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'morfeov.coliseum.player.AutoArmorCheck'
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(25) }
+}
+
+tasks.register('verifyRwSprint', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'morfeov.coliseum.combat.RwSprintResetCheck'
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(25) }
+}
+
+tasks.register('verifyElytraPrediction', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'morfeov.coliseum.combat.ElytraPredictionCheck'
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(25) }
+}
+tasks.register('verifyFriends', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'morfeov.coliseum.friend.FriendStoreTest'
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(25) }
+}
+tasks.register('verifyChamsShaders', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'morfeov.coliseum.ui.VisualShaderCheck'
+    args 'chams'
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(25) }
+}
+tasks.register('verifyChamsRender', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'morfeov.coliseum.ui.ChamsRenderAudit'
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(25) }
+}
+tasks.register('verifyFovRing', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'morfeov.coliseum.ui.VisualShaderCheck'
+    args 'ring'
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(25) }
+}
+
+tasks.register('verifySaturation', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'morfeov.coliseum.ui.VisualShaderCheck'
+    args 'saturation'
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(25) }
+}
+
+tasks.register('verifyExtraCosmetics', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'morfeov.coliseum.cosmetics.extra.ExtraCosmeticsCheck'
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(25) }
+}
+
+tasks.register('verifyColiseumModules', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'morfeov.coliseum.misc.ColiseumModulesCheck'
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(25) }
+}
+
+tasks.register('verifyBlockEspShaders', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'morfeov.coliseum.ui.VisualShaderCheck'
+    args 'blocks'
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(25) }
+}
+
+tasks.register('verifyBlockEspPorts', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'morfeov.coliseum.render.BlockEspPortsCheck'
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(25) }
+}
+
+tasks.named('check') { dependsOn tasks.named('verifyClientCommands') }
+
+tasks.named('check') { dependsOn tasks.named('verifyBackdropRegions') }
+
+tasks.register('verifySearchShaders', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'morfeov.coliseum.ui.VisualShaderCheck'
+    args 'search'
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(25) }
+}
+
+tasks.register('verifyColorPickerShaders', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'morfeov.coliseum.ui.VisualShaderCheck'
+    args 'picker'
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(25) }
+}
+
+tasks.register('verifyGuiText', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'morfeov.coliseum.ui.VisualShaderCheck'
+    args 'text'
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(25) }
+}
+tasks.register('verifyWeatherShaders', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'morfeov.coliseum.ui.VisualShaderCheck'
+    args 'weather'
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(25) }
+}
+jar { from('LICENSE'); from('licenses') { into 'licenses' } }
+
+tasks.register('verifyCustomCrystal', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'morfeov.coliseum.ui.CustomCrystalTest'
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(25) }
+}
+tasks.named('check') { dependsOn tasks.named('verifyCustomCrystal') }
+
+tasks.register('verifyMusic3D', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'morfeov.coliseum.render.music.Music3DSceneTest'
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(25) }
+}
+tasks.named('check') { dependsOn tasks.named('verifyMusic3D') }
+
+tasks.register('verifyWeatherGeometrics', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'morfeov.coliseum.ui.WeatherGeometrics'
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(25) }
+}
+tasks.named('check') { dependsOn tasks.named('verifyWeatherGeometrics') }

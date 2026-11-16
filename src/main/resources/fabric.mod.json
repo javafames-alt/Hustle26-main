@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "coliseum",
+  "version": "${version}",
+  "name": "Coliseum",
+  "description": "Client-side module framework, Click GUI and automatic sprint.",
+  "authors": ["sasha"],
+  "license": "MIT",
+  "environment": "client",
+  "jars": [
+    {"file": "META-INF/jars/punchy-2.8e-fabric-26.3.jar"},
+    {"file": "META-INF/jars/ViaFabricPlus-5.1.2.jar"},
+    {"file": "META-INF/jars/IAS-9.0.8+26.3-fabric.jar"}
+  ],
+  "entrypoints": {"client": ["morfeov.coliseum.Coliseum"]},
+  "mixins": ["coliseum.mixins.json", "coliseum-punchy.mixins.json"],
+  "depends": {"fabricloader": ">=0.19.5", "minecraft": "26.3", "java": ">=25", "fabric-api": "*"}
+}

@@ -1,0 +1,72 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      - name: Build (compile + jar, without OpenGL checks)
+        id: build
+        run: |
+          set -o pipefail
+          ./gradlew build -x check --stacktrace --console=plain 2>&1 | tee build.log
+
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: coliseum-jar
+          path: build/libs/*.jar
+          if-no-files-found: error
+
+      - name: Report result to PR
+        if: always() && github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          OUTCOME: ${{ steps.build.outcome }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ "$OUTCOME" = "success" ]; then icon="✅"; else icon="❌"; fi
+          {
+            echo "### $icon Build: $OUTCOME"
+            echo ""
+            echo "Commit: \`${{ github.event.pull_request.head.sha }}\` · [Run log]($RUN_URL)"
+            echo ""
+            if [ "$OUTCOME" != "success" ]; then
+              echo "Errors:"
+              echo '```'
+              grep -E "error:|warning: \[|FAILED|What went wrong|Could not|Exception" build.log | head -n 60 || true
+              echo '```'
+              echo ""
+              echo "Last lines:"
+              echo '```'
+              tail -n 60 build.log 2>/dev/null || echo "no build.log"
+              echo '```'
+            fi
+          } > comment.md
+          gh pr comment ${{ github.event.pull_request.number }} --body-file comment.md

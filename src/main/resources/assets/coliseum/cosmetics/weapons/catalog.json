@@ -1,0 +1,1042 @@
+[
+  {
+    "index": 20000,
+    "id": "pheonixgrace",
+    "name": "Pheonix Grace",
+    "type": "sword",
+    "model": "weapons/sword/pheonixgrace",
+    "icon": null
+  },
+  {
+    "index": 20001,
+    "id": "abominablegreatsaber",
+    "name": "Abominable Great Saber",
+    "type": "sword",
+    "model": "weapons/sword/abominablegreatsaber",
+    "icon": null
+  },
+  {
+    "index": 20002,
+    "id": "abominableblade",
+    "name": "Abominable Blade",
+    "type": "sword",
+    "model": "weapons/sword/abominableblade",
+    "icon": null
+  },
+  {
+    "index": 20003,
+    "id": "abominablescythe",
+    "name": "Abominable Scythe",
+    "type": "sword",
+    "model": "weapons/sword/abominablescythe",
+    "icon": null
+  },
+  {
+    "index": 20004,
+    "id": "aciddemon",
+    "name": "Acidic Cleaver",
+    "type": "sword",
+    "model": "weapons/sword/aciddemon",
+    "icon": null
+  },
+  {
+    "index": 20005,
+    "id": "amethyst_shuriken",
+    "name": "Amethyst Shuriken",
+    "type": "sword",
+    "model": "weapons/sword/amethyst_shuriken",
+    "icon": null
+  },
+  {
+    "index": 20006,
+    "id": "ancient_royal_great_sword",
+    "name": "Ancient Royal Great Sword",
+    "type": "sword",
+    "model": "weapons/sword/ancient_royal_great_sword",
+    "icon": null
+  },
+  {
+    "index": 20007,
+    "id": "aquantic_sacred_blade",
+    "name": "Aquatic Sacred Blade",
+    "type": "sword",
+    "model": "weapons/sword/aquantic_sacred_blade",
+    "icon": null
+  },
+  {
+    "index": 20008,
+    "id": "aquantictrident",
+    "name": "Ocean's Rage",
+    "type": "sword",
+    "model": "weapons/sword/aquantictrident",
+    "icon": null
+  },
+  {
+    "index": 20009,
+    "id": "ashura_blade",
+    "name": "Ashura's Blade",
+    "type": "sword",
+    "model": "weapons/sword/ashura_blade",
+    "icon": null
+  },
+  {
+    "index": 20010,
+    "id": "bloodedge",
+    "name": "Blood Edge",
+    "type": "sword",
+    "model": "weapons/sword/bloodedge",
+    "icon": null
+  },
+  {
+    "index": 20011,
+    "id": "bloodydeath",
+    "name": "Bloody Death",
+    "type": "sword",
+    "model": "weapons/sword/bloodydeath",
+    "icon": null
+  },
+  {
+    "index": 20012,
+    "id": "cariansword",
+    "name": "Carian Knight's Sword",
+    "type": "sword",
+    "model": "weapons/sword/cariansword",
+    "icon": null
+  },
+  {
+    "index": 20013,
+    "id": "chrono_blade",
+    "name": "Chrono Blade",
+    "type": "sword",
+    "model": "weapons/sword/chrono_blade",
+    "icon": null
+  },
+  {
+    "index": 20014,
+    "id": "corruptedmythicblade",
+    "name": "Corrupted Mythic Blade",
+    "type": "sword",
+    "model": "weapons/sword/corruptedmythicblade",
+    "icon": null
+  },
+  {
+    "index": 20015,
+    "id": "creationsplitter",
+    "name": "Creation Splitter",
+    "type": "sword",
+    "model": "weapons/sword/creationsplitter",
+    "icon": null
+  },
+  {
+    "index": 20016,
+    "id": "crescentrose",
+    "name": "Crescent Rose",
+    "type": "sword",
+    "model": "weapons/sword/crescentrose",
+    "icon": null
+  },
+  {
+    "index": 20017,
+    "id": "cyberkatana",
+    "name": "Cyber Katana",
+    "type": "sword",
+    "model": "weapons/sword/cyberkatana",
+    "icon": null
+  },
+  {
+    "index": 20018,
+    "id": "cybermantisblade",
+    "name": "Cyber Mantis Blade",
+    "type": "sword",
+    "model": "weapons/sword/cybermantisblade",
+    "icon": null
+  },
+  {
+    "index": 20019,
+    "id": "cybernetickatana",
+    "name": "Cybernetic Katana",
+    "type": "sword",
+    "model": "weapons/sword/cybernetickatana",
+    "icon": null
+  },
+  {
+    "index": 20020,
+    "id": "cyberneticknife",
+    "name": "Cybernetic Knife",
+    "type": "sword",
+    "model": "weapons/sword/cyberneticknife",
+    "icon": null
+  },
+  {
+    "index": 20021,
+    "id": "cyberneticsawblade",
+    "name": "Cybernetic Chainsaw Blade",
+    "type": "sword",
+    "model": "weapons/sword/cyberneticsawblade",
+    "icon": null
+  },
+  {
+    "index": 20022,
+    "id": "cybersword",
+    "name": "Cyber Sword",
+    "type": "sword",
+    "model": "weapons/sword/cybersword",
+    "icon": null
+  },
+  {
+    "index": 20023,
+    "id": "dainsleif",
+    "name": "Dainsleif",
+    "type": "sword",
+    "model": "weapons/sword/dainsleif",
+    "icon": null
+  },
+  {
+    "index": 20024,
+    "id": "dark_blade",
+    "name": "Dark Blade",
+    "type": "sword",
+    "model": "weapons/sword/dark_blade",
+    "icon": null
+  },
+  {
+    "index": 20025,
+    "id": "dark_cleaver",
+    "name": "Dark Cleaver",
+    "type": "sword",
+    "model": "weapons/sword/dark_cleaver",
+    "icon": null
+  },
+  {
+    "index": 20026,
+    "id": "death_knight_dagger",
+    "name": "Death Knight's Dagger",
+    "type": "sword",
+    "model": "weapons/sword/death_knight_dagger",
+    "icon": null
+  },
+  {
+    "index": 20027,
+    "id": "death_knight_sword",
+    "name": "Death Knight's Sword",
+    "type": "sword",
+    "model": "weapons/sword/death_knight_sword",
+    "icon": null
+  },
+  {
+    "index": 20028,
+    "id": "demigodsunholyhalberd",
+    "name": "Demigod's Unholy Halberd",
+    "type": "sword",
+    "model": "weapons/sword/demigodsunholyhalberd",
+    "icon": null
+  },
+  {
+    "index": 20029,
+    "id": "demigodsunholyblade",
+    "name": "Demigod's Unholy Blade",
+    "type": "sword",
+    "model": "weapons/sword/demigodsunholyblade",
+    "icon": null
+  },
+  {
+    "index": 20030,
+    "id": "demonicblade",
+    "name": "Demonic Blade",
+    "type": "sword",
+    "model": "weapons/sword/demonicblade",
+    "icon": null
+  },
+  {
+    "index": 20031,
+    "id": "demoniccleaver",
+    "name": "Demonic Cleaver",
+    "type": "sword",
+    "model": "weapons/sword/demoniccleaver",
+    "icon": null
+  },
+  {
+    "index": 20032,
+    "id": "demonlordsgreataxe",
+    "name": "Demon Lord's Great Axe",
+    "type": "sword",
+    "model": "weapons/sword/demonlordsgreataxe",
+    "icon": null
+  },
+  {
+    "index": 20033,
+    "id": "demonlordsword",
+    "name": "Demon Lord's Sword",
+    "type": "sword",
+    "model": "weapons/sword/demonlordsword",
+    "icon": null
+  },
+  {
+    "index": 20034,
+    "id": "divine_justice",
+    "name": "Divine Justice",
+    "type": "sword",
+    "model": "weapons/sword/divine_justice",
+    "icon": null
+  },
+  {
+    "index": 20035,
+    "id": "divine_reaper",
+    "name": "Divine Reaper",
+    "type": "sword",
+    "model": "weapons/sword/divine_reaper",
+    "icon": null
+  },
+  {
+    "index": 20036,
+    "id": "divinepunisher",
+    "name": "Divine Punisher",
+    "type": "sword",
+    "model": "weapons/sword/divinepunisher",
+    "icon": null
+  },
+  {
+    "index": 20037,
+    "id": "divineaxerhitta",
+    "name": "Divine Axe Rhitta",
+    "type": "sword",
+    "model": "weapons/sword/divineaxerhitta",
+    "icon": null
+  },
+  {
+    "index": 20038,
+    "id": "dragonslayingblade",
+    "name": "Dragon Slaying blade",
+    "type": "sword",
+    "model": "weapons/sword/dragonslayingblade",
+    "icon": null
+  },
+  {
+    "index": 20039,
+    "id": "edgeoftheastralplane",
+    "name": "Edge Of The Astral Plane",
+    "type": "sword",
+    "model": "weapons/sword/edgeoftheastralplane",
+    "icon": null
+  },
+  {
+    "index": 20040,
+    "id": "epicsword",
+    "name": "Epic Sword",
+    "type": "sword",
+    "model": "weapons/sword/epicsword",
+    "icon": null
+  },
+  {
+    "index": 20041,
+    "id": "estoc",
+    "name": "Estoc",
+    "type": "sword",
+    "model": "weapons/sword/estoc",
+    "icon": null
+  },
+  {
+    "index": 20042,
+    "id": "fallengodspear",
+    "name": "Fallen God's Spear",
+    "type": "sword",
+    "model": "weapons/sword/fallengodspear",
+    "icon": null
+  },
+  {
+    "index": 20043,
+    "id": "fallengodsword",
+    "name": "Fallen God's Sword",
+    "type": "sword",
+    "model": "weapons/sword/fallengodsword",
+    "icon": null
+  },
+  {
+    "index": 20044,
+    "id": "floral_longsword",
+    "name": "Floral Longsword",
+    "type": "sword",
+    "model": "weapons/sword/floral_longsword",
+    "icon": null
+  },
+  {
+    "index": 20045,
+    "id": "floral_sabre",
+    "name": "Floral Sabre",
+    "type": "sword",
+    "model": "weapons/sword/floral_sabre",
+    "icon": null
+  },
+  {
+    "index": 20046,
+    "id": "forest_guardian_glaive",
+    "name": "Forest Guardian's Glaive",
+    "type": "sword",
+    "model": "weapons/sword/forest_guardian_glaive",
+    "icon": null
+  },
+  {
+    "index": 20047,
+    "id": "frostaxe",
+    "name": "Frost Axe",
+    "type": "sword",
+    "model": "weapons/sword/frostaxe",
+    "icon": null
+  },
+  {
+    "index": 20048,
+    "id": "frostblade",
+    "name": "Frost Blade",
+    "type": "sword",
+    "model": "weapons/sword/frostblade",
+    "icon": null
+  },
+  {
+    "index": 20049,
+    "id": "frostscythe",
+    "name": "Frost Scythe",
+    "type": "sword",
+    "model": "weapons/sword/frostscythe",
+    "icon": null
+  },
+  {
+    "index": 20050,
+    "id": "greenscythe",
+    "name": "Wraith Scythe",
+    "type": "sword",
+    "model": "weapons/sword/greenscythe",
+    "icon": null
+  },
+  {
+    "index": 20051,
+    "id": "herosword",
+    "name": "Hero Sword",
+    "type": "sword",
+    "model": "weapons/sword/herosword",
+    "icon": null
+  },
+  {
+    "index": 20052,
+    "id": "holymoonlightsword",
+    "name": "Holy Moonlight Sword",
+    "type": "sword",
+    "model": "weapons/sword/holymoonlightsword",
+    "icon": null
+  },
+  {
+    "index": 20053,
+    "id": "hornetsneedle",
+    "name": "Hornet's Needle",
+    "type": "sword",
+    "model": "weapons/sword/hornetsneedle",
+    "icon": null
+  },
+  {
+    "index": 20054,
+    "id": "jadehalberd",
+    "name": "Jade Halberd",
+    "type": "sword",
+    "model": "weapons/sword/jadehalberd",
+    "icon": null
+  },
+  {
+    "index": 20055,
+    "id": "katana",
+    "name": "Katana",
+    "type": "sword",
+    "model": "weapons/sword/katana",
+    "icon": null
+  },
+  {
+    "index": 20056,
+    "id": "legendarysword",
+    "name": "Legendary Sword",
+    "type": "sword",
+    "model": "weapons/sword/legendarysword",
+    "icon": null
+  },
+  {
+    "index": 20057,
+    "id": "longsword",
+    "name": "Longsword",
+    "type": "sword",
+    "model": "weapons/sword/longsword",
+    "icon": null
+  },
+  {
+    "index": 20058,
+    "id": "masamune",
+    "name": "Masamune",
+    "type": "sword",
+    "model": "weapons/sword/masamune",
+    "icon": null
+  },
+  {
+    "index": 20059,
+    "id": "mjolnir",
+    "name": "Mjolnir",
+    "type": "sword",
+    "model": "weapons/sword/mjolnir",
+    "icon": null
+  },
+  {
+    "index": 20060,
+    "id": "moltenblade",
+    "name": "Molten Blade",
+    "type": "sword",
+    "model": "weapons/sword/moltenblade",
+    "icon": null
+  },
+  {
+    "index": 20061,
+    "id": "moltensword",
+    "name": "Molten Sword",
+    "type": "sword",
+    "model": "weapons/sword/moltensword",
+    "icon": null
+  },
+  {
+    "index": 20062,
+    "id": "muramasa",
+    "name": "Muramasa",
+    "type": "sword",
+    "model": "weapons/sword/muramasa",
+    "icon": null
+  },
+  {
+    "index": 20063,
+    "id": "mysticalspellblade",
+    "name": "Mystical Spellblade",
+    "type": "sword",
+    "model": "weapons/sword/mysticalspellblade",
+    "icon": null
+  },
+  {
+    "index": 20064,
+    "id": "mythicblade",
+    "name": "Mythic Blade",
+    "type": "sword",
+    "model": "weapons/sword/mythicblade",
+    "icon": null
+  },
+  {
+    "index": 20065,
+    "id": "partisan",
+    "name": "Partisan",
+    "type": "sword",
+    "model": "weapons/sword/partisan",
+    "icon": null
+  },
+  {
+    "index": 20066,
+    "id": "pharaohs_treasure",
+    "name": "Pharaoh's Treasure",
+    "type": "sword",
+    "model": "weapons/sword/pharaohs_treasure",
+    "icon": null
+  },
+  {
+    "index": 20067,
+    "id": "powerfusehammer",
+    "name": "Power Fuse Hammer",
+    "type": "sword",
+    "model": "weapons/sword/powerfusehammer",
+    "icon": null
+  },
+  {
+    "index": 20068,
+    "id": "powerfusesword",
+    "name": "Power Fuse Sword",
+    "type": "sword",
+    "model": "weapons/sword/powerfusesword",
+    "icon": null
+  },
+  {
+    "index": 20069,
+    "id": "riversofblood",
+    "name": "Rivers Of Blood",
+    "type": "sword",
+    "model": "weapons/sword/riversofblood",
+    "icon": null
+  },
+  {
+    "index": 20070,
+    "id": "royalchakram",
+    "name": "Royal Chakram",
+    "type": "sword",
+    "model": "weapons/sword/royalchakram",
+    "icon": null
+  },
+  {
+    "index": 20071,
+    "id": "royalrapier",
+    "name": "Royal Rapier",
+    "type": "sword",
+    "model": "weapons/sword/royalrapier",
+    "icon": null
+  },
+  {
+    "index": 20072,
+    "id": "sabre",
+    "name": "Sabre",
+    "type": "sword",
+    "model": "weapons/sword/sabre",
+    "icon": null
+  },
+  {
+    "index": 20073,
+    "id": "sculkcleaver",
+    "name": "Sculk Cleaver",
+    "type": "sword",
+    "model": "weapons/sword/sculkcleaver",
+    "icon": null
+  },
+  {
+    "index": 20074,
+    "id": "scissorblade",
+    "name": "Scissor Blade",
+    "type": "sword",
+    "model": "weapons/sword/scissorblade",
+    "icon": null
+  },
+  {
+    "index": 20075,
+    "id": "sculkscythe",
+    "name": "Sculk Scythe",
+    "type": "sword",
+    "model": "weapons/sword/sculkscythe",
+    "icon": null
+  },
+  {
+    "index": 20076,
+    "id": "sculksword",
+    "name": "Sculk Sword",
+    "type": "sword",
+    "model": "weapons/sword/sculksword",
+    "icon": null
+  },
+  {
+    "index": 20077,
+    "id": "silverine_blade",
+    "name": "Silverine Blade",
+    "type": "sword",
+    "model": "weapons/sword/silverine_blade",
+    "icon": null
+  },
+  {
+    "index": 20078,
+    "id": "sentinels_will",
+    "name": "Sentinel's Will",
+    "type": "sword",
+    "model": "weapons/sword/sentinels_will",
+    "icon": null
+  },
+  {
+    "index": 20079,
+    "id": "soul_devourer",
+    "name": "Soul Devourer",
+    "type": "sword",
+    "model": "weapons/sword/soul_devourer",
+    "icon": null
+  },
+  {
+    "index": 20080,
+    "id": "soul_collector",
+    "name": "Soul Collector",
+    "type": "sword",
+    "model": "weapons/sword/soul_collector",
+    "icon": null
+  },
+  {
+    "index": 20081,
+    "id": "souledge",
+    "name": "Soul Edge",
+    "type": "sword",
+    "model": "weapons/sword/souledge",
+    "icon": null
+  },
+  {
+    "index": 20082,
+    "id": "soulclaws",
+    "name": "Soul Claws",
+    "type": "sword",
+    "model": "weapons/sword/soulclaws",
+    "icon": null
+  },
+  {
+    "index": 20083,
+    "id": "steelsword",
+    "name": "Steel Sword",
+    "type": "sword",
+    "model": "weapons/sword/steelsword",
+    "icon": null
+  },
+  {
+    "index": 20084,
+    "id": "soulharvester",
+    "name": "Soul Harvester",
+    "type": "sword",
+    "model": "weapons/sword/soulharvester",
+    "icon": null
+  },
+  {
+    "index": 20085,
+    "id": "tengensblade",
+    "name": "Tengen's Blade",
+    "type": "sword",
+    "model": "weapons/sword/tengensblade",
+    "icon": null
+  },
+  {
+    "index": 20086,
+    "id": "stop_sign",
+    "name": "Stop Sign",
+    "type": "sword",
+    "model": "weapons/sword/stop_sign",
+    "icon": null
+  },
+  {
+    "index": 20087,
+    "id": "sunbreak",
+    "name": "Sunbreak",
+    "type": "sword",
+    "model": "weapons/sword/sunbreak",
+    "icon": null
+  },
+  {
+    "index": 20088,
+    "id": "thunderbringer",
+    "name": "Thunder Bringer",
+    "type": "sword",
+    "model": "weapons/sword/thunderbringer",
+    "icon": null
+  },
+  {
+    "index": 20089,
+    "id": "terrablade",
+    "name": "Terra Blade",
+    "type": "sword",
+    "model": "weapons/sword/terrablade",
+    "icon": null
+  },
+  {
+    "index": 20090,
+    "id": "thousanddemondaggers",
+    "name": "Thousand Demon Daggers",
+    "type": "sword",
+    "model": "weapons/sword/thousanddemondaggers",
+    "icon": null
+  },
+  {
+    "index": 20091,
+    "id": "yoru",
+    "name": "Yoru",
+    "type": "sword",
+    "model": "weapons/sword/yoru",
+    "icon": null
+  },
+  {
+    "index": 20092,
+    "id": "toxic_longsword",
+    "name": "Plague Longsword",
+    "type": "sword",
+    "model": "weapons/sword/toxic_longsword",
+    "icon": null
+  },
+  {
+    "index": 20093,
+    "id": "vampiricneedle",
+    "name": "Vampiric Needle",
+    "type": "sword",
+    "model": "weapons/sword/vampiricneedle",
+    "icon": null
+  },
+  {
+    "index": 20094,
+    "id": "wakizashi",
+    "name": "Wakizashi",
+    "type": "sword",
+    "model": "weapons/sword/wakizashi",
+    "icon": null
+  },
+  {
+    "index": 20095,
+    "id": "whisperwind",
+    "name": "Whisperwind",
+    "type": "sword",
+    "model": "weapons/sword/whisperwind",
+    "icon": null
+  },
+  {
+    "index": 20096,
+    "id": "wickpiercer",
+    "name": "Wickpiercer",
+    "type": "sword",
+    "model": "weapons/sword/wickpiercer",
+    "icon": null
+  },
+  {
+    "index": 20097,
+    "id": "thunderbrand",
+    "name": "Thunderbrand",
+    "type": "sword",
+    "model": "weapons/sword/thunderbrand",
+    "icon": null
+  },
+  {
+    "index": 20098,
+    "id": "watcher_claymore",
+    "name": "Watcher Claymore",
+    "type": "sword",
+    "model": "weapons/sword/watcher_claymore",
+    "icon": null
+  },
+  {
+    "index": 20099,
+    "id": "watching_warglaive",
+    "name": "Watching Warglaive",
+    "type": "sword",
+    "model": "weapons/sword/watching_warglaive",
+    "icon": null
+  },
+  {
+    "index": 20100,
+    "id": "waxweaver",
+    "name": "Waxweaver",
+    "type": "sword",
+    "model": "weapons/sword/waxweaver",
+    "icon": null
+  },
+  {
+    "index": 20101,
+    "id": "stars_edge",
+    "name": "Star's Edge",
+    "type": "sword",
+    "model": "weapons/sword/stars_edge",
+    "icon": null
+  },
+  {
+    "index": 20102,
+    "id": "stormbringer",
+    "name": "Storm Bringer",
+    "type": "sword",
+    "model": "weapons/sword/stormbringer",
+    "icon": null
+  },
+  {
+    "index": 20103,
+    "id": "storms_edge",
+    "name": "Storm's Edge",
+    "type": "sword",
+    "model": "weapons/sword/storms_edge",
+    "icon": null
+  },
+  {
+    "index": 20104,
+    "id": "ribboncleaver",
+    "name": "Ribbon Cleaver",
+    "type": "sword",
+    "model": "weapons/sword/ribboncleaver",
+    "icon": null
+  },
+  {
+    "index": 20105,
+    "id": "righteous_relic",
+    "name": "Righteous Relic",
+    "type": "sword",
+    "model": "weapons/sword/righteous_relic",
+    "icon": null
+  },
+  {
+    "index": 20106,
+    "id": "soulrender",
+    "name": "Soulrender",
+    "type": "sword",
+    "model": "weapons/sword/soulrender",
+    "icon": null
+  },
+  {
+    "index": 20107,
+    "id": "soulstealer",
+    "name": "Soul Stealer",
+    "type": "sword",
+    "model": "weapons/sword/soulstealer",
+    "icon": null
+  },
+  {
+    "index": 20108,
+    "id": "enigma",
+    "name": "Enigma",
+    "type": "sword",
+    "model": "weapons/sword/enigma",
+    "icon": null
+  },
+  {
+    "index": 20109,
+    "id": "hearthflame",
+    "name": "Hearthflame",
+    "type": "sword",
+    "model": "weapons/sword/hearthflame",
+    "icon": null
+  },
+  {
+    "index": 20110,
+    "id": "icewhisper",
+    "name": "Icewhisper",
+    "type": "sword",
+    "model": "weapons/sword/icewhisper",
+    "icon": null
+  },
+  {
+    "index": 20111,
+    "id": "magiscythe",
+    "name": "Magi Scythe",
+    "type": "sword",
+    "model": "weapons/sword/magiscythe",
+    "icon": null
+  },
+  {
+    "index": 20112,
+    "id": "arcanethyst",
+    "name": "Arcanethyst",
+    "type": "sword",
+    "model": "weapons/sword/arcanethyst",
+    "icon": null
+  },
+  {
+    "index": 20113,
+    "id": "awakened_lichblade",
+    "name": "Awakened Lichblade",
+    "type": "sword",
+    "model": "weapons/sword/awakened_lichblade",
+    "icon": null
+  },
+  {
+    "index": 20114,
+    "id": "bramblethorn",
+    "name": "Bramblethorn",
+    "type": "sword",
+    "model": "weapons/sword/bramblethorn",
+    "icon": null
+  },
+  {
+    "index": 20115,
+    "id": "brimstone_claymore",
+    "name": "Brimstone Claymore",
+    "type": "sword",
+    "model": "weapons/sword/brimstone_claymore",
+    "icon": null
+  },
+  {
+    "index": 20116,
+    "id": "emberblade",
+    "name": "Emberblade",
+    "type": "sword",
+    "model": "weapons/sword/emberblade",
+    "icon": null
+  },
+  {
+    "index": 20117,
+    "id": "excalibur",
+    "name": "True Excalibur",
+    "type": "sword",
+    "model": "weapons/sword/excalibur",
+    "icon": null
+  },
+  {
+    "index": 20118,
+    "id": "requiem_of_hell",
+    "name": "Requiem of the Ninth Abyss",
+    "type": "sword",
+    "model": "weapons/sword/requiem_of_hell",
+    "icon": null
+  },
+  {
+    "index": 21000,
+    "id": "anvil_on_a_stick",
+    "name": "Anvil on a Stick",
+    "type": "mace",
+    "model": "weapons/mace/anvil_on_a_stick",
+    "icon": "textures/cosmetics/weapons/anvil_on_a_stick.png"
+  },
+  {
+    "index": 21001,
+    "id": "better_mace",
+    "name": "Better Mace",
+    "type": "mace",
+    "model": "weapons/mace/better_mace",
+    "icon": "textures/cosmetics/weapons/better_mace.png"
+  },
+  {
+    "index": 21002,
+    "id": "dungeons_mace",
+    "name": "Dungeons Mace",
+    "type": "mace",
+    "model": "weapons/mace/dungeons_mace",
+    "icon": "textures/cosmetics/weapons/dungeons_mace.png"
+  },
+  {
+    "index": 21003,
+    "id": "frying_pan",
+    "name": "Frying Pan",
+    "type": "mace",
+    "model": "weapons/mace/frying_pan",
+    "icon": "textures/cosmetics/weapons/frying_pan.png"
+  },
+  {
+    "index": 21004,
+    "id": "greataxe",
+    "name": "Greataxe",
+    "type": "mace",
+    "model": "weapons/mace/greataxe",
+    "icon": "textures/cosmetics/weapons/greataxe.png"
+  },
+  {
+    "index": 21005,
+    "id": "mace_hammer",
+    "name": "Mace Hammer",
+    "type": "mace",
+    "model": "weapons/mace/mace_hammer",
+    "icon": "textures/cosmetics/weapons/mace_hammer.png"
+  },
+  {
+    "index": 21006,
+    "id": "mace_scythe",
+    "name": "Mace Scythe",
+    "type": "mace",
+    "model": "weapons/mace/mace_scythe",
+    "icon": "textures/cosmetics/weapons/mace_scythe.png"
+  },
+  {
+    "index": 21007,
+    "id": "pwmace_2d",
+    "name": "PwMace 2D",
+    "type": "mace",
+    "model": "weapons/mace/pwmace_2d",
+    "icon": "textures/cosmetics/weapons/pwmace_2d.png"
+  },
+  {
+    "index": 21008,
+    "id": "pwmace_3d",
+    "name": "PwMace 3D",
+    "type": "mace",
+    "model": "weapons/mace/pwmace_3d",
+    "icon": "textures/cosmetics/weapons/pwmace_3d.png"
+  },
+  {
+    "index": 21009,
+    "id": "stratocaster",
+    "name": "Stratocaster",
+    "type": "mace",
+    "model": "weapons/mace/stratocaster",
+    "icon": "textures/cosmetics/weapons/stratocaster.png"
+  },
+  {
+    "index": 21010,
+    "id": "windswept_mace",
+    "name": "Windswept Mace",
+    "type": "mace",
+    "model": "weapons/mace/windswept_mace",
+    "icon": "textures/cosmetics/weapons/windswept_mace.png"
+  }
+]
