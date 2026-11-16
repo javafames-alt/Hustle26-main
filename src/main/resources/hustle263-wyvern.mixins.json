@@ -1,0 +1,20 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "im.yaHustler.wyvern.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "client": [
+    "accessor.FirstPersonHandsAndItemsAccessor",
+    "render.EntityRenderStateMixin",
+    "render.FirstPersonHandsAndItemsMixin",
+    "render.FirstPersonHandsAndItemsRendererMixin",
+    "entity.LivingEntityMixin",
+    "client.MultiPlayerGameModeMixin",
+    "network.ClientPacketListenerMixin",
+    "input.KeyboardHandlerMixin",
+    "input.MouseHandlerMixin"
+  ]
+}

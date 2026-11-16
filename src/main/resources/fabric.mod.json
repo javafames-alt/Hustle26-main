@@ -13,6 +13,6 @@
     {"file": "META-INF/jars/IAS-9.0.8+26.3-fabric.jar"}
   ],
   "entrypoints": {"client": ["im.yaHustler.Hustle26"]},
-  "mixins": ["hustle263.mixins.json", "hustle263-punchy.mixins.json"],
-  "depends": {"fabricloader": ">=0.19.5", "minecraft": "26.3", "java": ">=25", "fabric-api": "*"}
+  "mixins": ["hustle263.mixins.json", "hustle263-punchy.mixins.json", "hustle263-wyvern.mixins.json"],
+  "depends": {"fabricloader": ">=0.19.5", "minecraft": "26.3", "java": ">=25", "fabric-api": "*", "fabric-language-kotlin": "*"}
 }

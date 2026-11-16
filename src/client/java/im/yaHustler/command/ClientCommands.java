@@ -36,6 +36,7 @@ public final class ClientCommands {
                 case ".blockesp" -> blockesp(args);
                 case ".autosell" -> autoSell(args);
                 case ".dataset", ".neuro" -> dataSet(args);
+                case ".oldgui" -> oldGui();
                 default -> { return false; }
             }
         } catch (Exception e) {
@@ -44,8 +45,13 @@ public final class ClientCommands {
         return true;
     }
 
-    private static void bot(String message) {
-        String[] args = message.split("\\s+", 4);
+    /** Opens the legacy interface (cosmetics, configs, bots pages) that the wyvern GUI replaced. */
+    private static void oldGui() {
+        Minecraft.getInstance().gui.setScreen(new im.yaHustler.ui.ClickGuiScreen(Hustle26.MODULES));
+        say("Старый интерфейс открыт. Косметика, конфиги и боты — на своих страницах.");
+    }
+
+    private static void bot(String message) {        String[] args = message.split("\\s+", 4);
         BotManager manager = BotManager.instance();
         String action = args.length > 1 ? args[1].toLowerCase(Locale.ROOT) : "";
         if (action.equals("stop") && args.length == 2
@@ -240,6 +246,7 @@ public final class ClientCommands {
         var message = prefixed("Command");
         String[][] entries = {
             {".help", "Показать список команд"},
+            {".oldgui", "Открыть старый интерфейс (косметика, конфиги, боты)"},
             {".bot", "Следование, повтор движения и чат ботов"},
             {".dataset record|stop|status|setup|train|use|cancel", "Запись датасета и обучение модели"},
             {".autosell hand|inventory|stop", "Продать предмет из руки, инвентарь или остановить продажу"},
