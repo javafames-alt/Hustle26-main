@@ -22,7 +22,7 @@ public final class HotKeys extends HudElement {
         if (measuredRevision != revision || showKeys != keys) {
             measuredRevision = revision; showKeys = keys;
             bound.clear(); width = 84;
-            for (Module module : registry.all()) if (module.hasKey() && module.enabled()) {
+            for (Module module : registry.all()) if (module.hasKey() && module.enabled() && !registry.isHidden(module)) {
                 bound.add(module);
                 width = Math.max(width, (int)Math.ceil(14 + HudStyle.width(module.name(), 6.75f)
                     + (showKeys ? 16 + HudStyle.width(module.keyName(), 6.25f) : 0)));
@@ -34,10 +34,11 @@ public final class HotKeys extends HudElement {
     }
     protected void draw(GuiGraphicsExtractor g, Minecraft mc, int x, int y) {
         HudStyle.panel(g, x, y, width, height);
-        HudStyle.header(g, x, y, width, "KeyBinds", "keybinds", !bound.isEmpty());
+        HudStyle.header(g, x, y, width, "Клавиши", "keybinds", !bound.isEmpty());
         for (int i = 0; i < bound.size(); i++) {
             Module m = bound.get(i);
             float cy = y + 28 + i * 15;
+            HudStyle.row(g, x, cy - 6.5f, width);
             HudStyle.text(g, m.name(), x + 7, cy, HudStyle.TEXT, 6.75f, false);
             if (showKeys) HudStyle.pill(g, m.keyName(), x + width - 7, cy);
         }

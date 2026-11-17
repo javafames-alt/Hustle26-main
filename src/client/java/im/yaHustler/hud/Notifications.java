@@ -20,9 +20,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 public final class Notifications extends HudElement {
-    private static final int CARD_HEIGHT = 20, GAP = 4, TEXT_X = 35, MAX_WIDTH = 260;
+    private static final int CARD_HEIGHT = 23, GAP = 4, TEXT_X = 27, MAX_WIDTH = 240;
     private static final float FONT = 7.2f, LINE_HEIGHT = 9f;
-    private static final float RADIUS = 6f;
+    private static final float RADIUS = 8f;
     private record Notice(String text, Boolean enabled, long born, long end) {}
     private record Card(Notice notice, List<String> lines, int width, int height) {}
     private static final Deque<Notice> QUEUE = new ArrayDeque<>();
@@ -30,6 +30,7 @@ public final class Notifications extends HudElement {
     private final Set<String> warned = new HashSet<>();
     private final List<Card> shown = new ArrayList<>();
     private Object level;
+    private int stackWidth;
 
     public Notifications(NumberSetting x, NumberSetting y) {
         super(x, y);
@@ -57,7 +58,7 @@ public final class Notifications extends HudElement {
         }
         for (Module m : Hustle26.MODULES.all()) {
             Boolean previous = states.put(m, m.enabled());
-            if (previous != null && previous != m.enabled() && !m.id().equals("clickgui")) {
+            if (previous != null && previous != m.enabled() && !m.id().equals("clickgui") && !Hustle26.MODULES.isHidden(m)) {
                 post(m.name(), m.enabled());
             }
         }
@@ -82,14 +83,15 @@ public final class Notifications extends HudElement {
         QUEUE.removeIf(n -> now >= n.end);
         shown.clear();
         for (var n : QUEUE) shown.add(card(n));
-        if (shown.isEmpty() && editing) shown.add(card(new Notice("AttackAura", true, now - 500, now + 3000)));
+        if (shown.isEmpty() && editing) shown.add(card(new Notice("Предпросмотр уведомления", null, now - 500, now + 3000)));
         if (shown.isEmpty()) return;
         int width = 0, height = -GAP;
         for (var card : shown) {
             width = Math.max(width, card.width);
             height += card.height + GAP;
         }
-        size(width, height);
+        stackWidth = width;
+        size(stackWidth, height);
     }
 
     private static float textWidth(String text) {
@@ -101,7 +103,7 @@ public final class Notifications extends HudElement {
     }
 
     private static Card card(Notice n) {
-        String text = n.enabled == null ? n.text : "Функция " + n.text + " " + status(n);
+        String text = n.enabled == null ? n.text : n.text + " " + status(n);
         List<String> lines = TextWrap.lines(text, MAX_WIDTH - TEXT_X - 9, Notifications::textWidth);
         int width = TEXT_X + 9;
         for (String line : lines) width = Math.max(width, TEXT_X + 9 + (int) Math.ceil(textWidth(line)));
@@ -119,10 +121,11 @@ public final class Notifications extends HudElement {
     }
 
     @Override
-    protected void draw(GuiGraphicsExtractor g, Minecraft mc, int x, int y) {
+    protected void draw(GuiGraphicsExtractor g, Minecraft mc, int leftX, int y) {
         long now = System.currentTimeMillis();
         int ry = y;
         for (Card card : shown) {
+            int x = leftX + stackWidth - card.width;
             Notice n = card.notice;
             float time = Math.clamp((now - n.born) / 220f, 0, 1), enter = 1 - (float) Math.pow(1 - time, 3);
             float fade = Math.clamp((n.end - now) / 250f, 0, 1), a = enter * fade;
@@ -137,14 +140,9 @@ public final class Notifications extends HudElement {
                 }
                 HudStyle.panel(g, x, ry, card.width, card.height, 1, RADIUS);
                 float cy = ry + card.height / 2f;
-                if (n.enabled == null) {
-                    InterfaceAssets.centeredIcon(g, "info", x + 16, cy, 9, accent);
-                } else {
-                    Draw.roundedF(g, x + 7, cy - 5, 18, 10, 5, accent);
-                    float enabled = n.enabled ? enter : 1 - enter;
-                    Draw.circle(g, x + 12 + 8 * enabled, cy, 3.5f, 0xfff8faf9);
-                }
-                Draw.fillF(g, x + 30, cy - 5, .5f, 10, 0x24ffffff);
+                Draw.roundedF(g, x + 5, cy - 7, 14, 14, 4, im.yaHustler.ui.InterfaceTheme.alpha(accent, .23f));
+                String icon = n.enabled == null ? "info" : n.enabled ? "checkmark" : "hud/x";
+                InterfaceAssets.centeredIcon(g, icon, x + 12, cy, 7, accent);
                 float lineY = cy - (card.lines.size() - 1) * LINE_HEIGHT / 2;
                 String status = status(n);
                 for (String line : card.lines) {
@@ -156,7 +154,7 @@ public final class Notifications extends HudElement {
                 }
                 float duration = Math.max(1, n.end - n.born);
                 float left = Math.clamp((n.end - now) / duration, 0, 1);
-                Draw.roundedF(g, x + 6, ry + card.height - 2f, (card.width - 12) * left, 1.2f, .6f, accent);
+                Draw.roundedF(g, x + TEXT_X, ry + card.height - 2.5f, (card.width - TEXT_X - 8) * left, 1f, .5f, accent);
             } finally {
                 GuiOpacity.restore(previous);
                 g.pose().popMatrix();

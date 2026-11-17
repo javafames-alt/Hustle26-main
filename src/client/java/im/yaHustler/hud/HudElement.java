@@ -6,6 +6,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 public abstract class HudElement {
+    public static final int CENTER = -1, RIGHT = -2;
     private final NumberSetting posX, posY;
     private int x, y, width, height;
     private NumberSetting scaleSetting;
@@ -35,8 +36,15 @@ public abstract class HudElement {
         if (width <= 0 || height <= 0) return;
         int rawWidth = width, rawHeight = height;
         float scale = scaleSetting == null ? 1 : scaleSetting.floatValue();
+        scale = Math.min(scale, Math.min(g.guiWidth() / (float)rawWidth, g.guiHeight() / (float)rawHeight));
+        if (scale <= 0) return;
         width = Math.max(1, Math.round(width * scale)); height = Math.max(1, Math.round(height * scale));
-        x = Math.clamp(posX.intValue(), 0, Math.max(0, g.guiWidth() - width));
+        int availableX = Math.max(0, g.guiWidth() - width);
+        x = switch (posX.intValue()) {
+            case CENTER -> availableX / 2;
+            case RIGHT -> Math.max(0, availableX - 7);
+            default -> Math.clamp(posX.intValue(), 0, availableX);
+        };
         y = Math.clamp(posY.intValue(), 0, Math.max(0, g.guiHeight() - height));
         long now = System.nanoTime();
         double seconds = frameTime == 0 ? 0 : (now - frameTime) / 1e9;
@@ -82,7 +90,8 @@ public abstract class HudElement {
     public final void beginDrag() { moveTime = System.nanoTime(); }
     public final void dragTo(int nx, int ny, int screenWidth, int screenHeight, boolean save) {
         long now = System.nanoTime();
-        motion.move(nx - posX.intValue(), ny - posY.intValue(), (now - moveTime) / 1e9);
+        int currentX = posX.intValue() < 0 ? x : posX.intValue();
+        motion.move(nx - currentX, ny - posY.intValue(), (now - moveTime) / 1e9);
         moveTime = now;
         moveTo(nx, ny, screenWidth, screenHeight, save);
     }

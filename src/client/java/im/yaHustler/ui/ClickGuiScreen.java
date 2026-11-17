@@ -774,7 +774,8 @@ public final class ClickGuiScreen extends Screen {
     }
     private boolean overBind(ModuleHit hit, double mx, double my) {
         float right = bindRight(hit), w = bindWidth(bindLabel(hit.module));
-        return Draw.inside(mx, my, right - w, hit.y + (CARD_H - 13) / 2f, w, 13);
+        float top = hit.y + (CARD_H - 13) / 2f;
+        return mx >= right - w && mx < right && my >= top && my < top + 13;
     }
     private void updateScrollbar(double mouseY) {
         float[] bar = scrollbar(); float travel = contentBottom() - contentTop() - bar[3];

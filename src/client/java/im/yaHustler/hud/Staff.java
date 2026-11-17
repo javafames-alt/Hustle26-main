@@ -19,7 +19,7 @@ public final class Staff extends HudElement {
     public Staff(NumberSetting x,NumberSetting y){super(x,y);}
     protected void measure(Minecraft mc,boolean editing){
         long now=System.nanoTime();
-        if(width>0 && connection==mc.getConnection() && now<nextRefresh){size(width,height);return;}
+        if(width>0 && connection==mc.getConnection() && now<nextRefresh){showSize(editing);return;}
         connection=mc.getConnection();nextRefresh=now+250_000_000L;
         entries.clear();width=MIN_WIDTH;
         if(mc.getConnection()!=null)for(var p:mc.getConnection().getOnlinePlayers()){
@@ -36,16 +36,21 @@ public final class Staff extends HudElement {
                 +(role.isEmpty()?0:badgeWidth(role)+5)));
         }
         entries.sort(Comparator.comparing(Entry::name,String.CASE_INSENSITIVE_ORDER));
-        height=HEADER+(entries.isEmpty()?0:5+entries.size()*ROW);size(width,height);
+        height=HEADER+(entries.isEmpty()?0:5+entries.size()*ROW);showSize(editing);
+    }
+    private void showSize(boolean editing) {
+        var options = HudStyle.options();
+        if (editing || !entries.isEmpty() || options != null && options.emptyLists.enabled()) size(width, height);
     }
     private static boolean staffName(String name){
         for(String marker:MARKERS)if(name.contains(marker))return true;
         return false;
     }
     protected void draw(GuiGraphicsExtractor g,Minecraft mc,int x,int y){
-        HudStyle.panel(g,x,y,width,height);HudStyle.header(g,x,y,width,"Staff","staff",!entries.isEmpty());
+        HudStyle.panel(g,x,y,width,height);HudStyle.header(g,x,y,width,"Стафф","staff",!entries.isEmpty());
         for(int i=0;i<entries.size();i++){
             Entry e=entries.get(i);float cy=y+28+i*ROW,cx=x+7;
+            HudStyle.row(g,x,cy-6.5f,width);
             if(!e.role.isEmpty()){HudStyle.text(g,e.role,cx,cy,e.color,BADGE_SIZE,true);cx+=badgeWidth(e.role)+5;}
             HudStyle.text(g,e.name,cx,cy,HudStyle.TEXT,NAME_SIZE,false);
             int ping=e.ping<80?0xff5bd584:e.ping<160?0xfff5be46:0xffff5a5a;

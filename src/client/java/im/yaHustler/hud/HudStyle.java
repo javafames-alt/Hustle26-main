@@ -59,7 +59,7 @@ public final class HudStyle {
     }
 
     static void arc(GuiGraphicsExtractor g, float cx, float cy, float radius, float progress, int color) {
-        final int segments = 32;
+        int segments = Math.clamp(Math.round(radius * 3), 12, 32);
         float turn = (float)(2 * Math.PI / segments);
         float remaining = Math.clamp(progress, 0, 1) * segments;
         if (remaining <= 0) return;

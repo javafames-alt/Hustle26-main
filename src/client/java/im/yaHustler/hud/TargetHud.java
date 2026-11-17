@@ -14,7 +14,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 
 public final class TargetHud extends HudElement {
-    private static final float H = 34f, RADIUS = 7f, HEAD = 22f, RING = 10f;
+    private static final float H = 34f, RADIUS = 9f, HEAD = 22f, RING = 9.5f;
     private static final long KEEP_MS = 1000;
     private static final int ABSORPTION = 0xffffcc00;
     private static final EquipmentSlot[] GEAR = {
@@ -22,7 +22,9 @@ public final class TargetHud extends HudElement {
     };
     private LivingEntity target, shownTarget;
     private long lastSeen, lastFrame;
-    private float alpha, hp = -1, trail = -1, absorption = -1, dt;
+    private float alpha, hp = -1, trail = -1, dt;
+    private boolean showHealth, showEquipment;
+    private int gearCount;
     private int hpValue = Integer.MIN_VALUE;
     private String hpText = "";
     private int measuredWidth = 120;
@@ -57,7 +59,7 @@ public final class TargetHud extends HudElement {
         boolean show = target != null;
         alpha = approach(alpha, show ? 1 : 0, dt * (show ? 9 : 5));
         if (show) {
-            if (shownTarget != target) hp = trail = absorption = -1;
+            if (shownTarget != target) hp = trail = -1;
             shownTarget = target;
         }
         if (shownTarget == null || alpha <= .02f) {
@@ -65,15 +67,20 @@ public final class TargetHud extends HudElement {
             return;
         }
 
+        var options = HudStyle.options();
+        showEquipment = options == null || options.targetEquipment.enabled();
+        showHealth = options == null || options.targetHealth.enabled();
         String name = shownTarget.getName().getString();
         float nameWidth = FigmaFont.mediumWidth(name, 8f / 11);
-        int gearCount = 0;
-        for (EquipmentSlot slot : GEAR) {
-            if (!shownTarget.getItemBySlot(slot).isEmpty()) gearCount++;
+        gearCount = 0;
+        if (showEquipment) {
+            for (EquipmentSlot slot : GEAR) {
+                if (!shownTarget.getItemBySlot(slot).isEmpty()) gearCount++;
+            }
         }
         float centerWidth = Math.max(nameWidth, gearCount * 11f);
         centerWidth = Math.clamp(centerWidth, 40f, 120f);
-        measuredWidth = (int) Math.ceil(7f + HEAD + 7f + centerWidth + 8f + RING * 2f + 7f);
+        measuredWidth = (int)Math.ceil(6f + HEAD + 7f + centerWidth + 7f + (showHealth ? 8f + RING * 2 : 0));
         size(measuredWidth, (int) H);
     }
 
@@ -81,6 +88,8 @@ public final class TargetHud extends HudElement {
         var combatTarget = im.yaHustler.port.CombatHooks.target();
         if (combatTarget != null && combatTarget.isAlive()) return combatTarget;
         if (client.crosshairPickEntity instanceof LivingEntity living && living.isAlive() && living != client.player) return living;
+        var lastHit = client.player.getLastHurtMob();
+        if (lastHit != null && lastHit.isAlive() && client.player.tickCount - client.player.getLastHurtMobTimestamp() < 60) return lastHit;
         return null;
     }
 
@@ -96,7 +105,6 @@ public final class TargetHud extends HudElement {
         float gold = Math.max(0, entity.getAbsorptionAmount());
         hp = ease(hp, Math.clamp(health / max, 0, 1), 9.2f);
         trail = trail < hp ? hp : ease(trail, hp, 7.4f);
-        absorption = ease(absorption, Math.clamp(gold / 20f, 0, 1), 9.2f);
 
         HudStyle.panel(g, ix, iy, measuredWidth, (int) H, a, RADIUS);
 
@@ -105,35 +113,37 @@ public final class TargetHud extends HudElement {
 
         float tx = hx + HEAD + 7f;
         float cy = y + H / 2f;
-        String name = FigmaFont.fitMedium(entity.getName().getString(), measuredWidth - (int) tx - 30, 7.8f / 11);
-        HudStyle.text(g, name, tx, cy - 6f, fade(HudStyle.TEXT, a), 7.8f, true);
+        float ringX = x + measuredWidth - 7f - RING;
+        float nameRight = showHealth ? ringX - RING - 8 : x + measuredWidth - 7;
+        String name = FigmaFont.fitMedium(entity.getName().getString(), (int)(nameRight - tx), 7.8f / 11);
+        HudStyle.text(g, name, tx, cy - (gearCount > 0 ? 6 : 0), fade(HudStyle.TEXT, a), 7.8f, true);
 
         float ixPos = tx;
         float itemY = cy + 3f;
-        float prevOpacity = im.yaHustler.ui.GuiOpacity.push(a);
-        try {
-            for (EquipmentSlot slot : GEAR) {
-                ItemStack stack = entity.getItemBySlot(slot);
-                if (stack.isEmpty()) continue;
-                referenceItem(g, stack, ixPos, itemY);
-                ixPos += 11f;
+        if (gearCount > 0) {
+            float prevOpacity = im.yaHustler.ui.GuiOpacity.push(a);
+            try {
+                for (EquipmentSlot slot : GEAR) {
+                    ItemStack stack = entity.getItemBySlot(slot);
+                    if (stack.isEmpty()) continue;
+                    referenceItem(g, stack, ixPos, itemY);
+                    ixPos += 11f;
+                }
+            } finally {
+                im.yaHustler.ui.GuiOpacity.restore(prevOpacity);
             }
-        } finally {
-            im.yaHustler.ui.GuiOpacity.restore(prevOpacity);
         }
 
-        float ringX = x + measuredWidth - 7f - RING;
-        float ringY = cy;
-        Draw.circle(g, ringX, ringY, RING + 1f, fade(0x32101412, a));
-        Draw.ring(g, ringX, ringY, RING, fade(accent & 0x30ffffff, a));
-        if (gold > 0) {
-            Draw.ring(g, ringX, ringY, RING, fade(ABSORPTION, a));
-        } else {
-            Draw.ring(g, ringX, ringY, RING, fade(accent, a));
+        if (showHealth) {
+            Draw.circle(g, ringX, cy, RING + .5f, fade(HudStyle.FIELD, a));
+            HudStyle.arc(g, ringX, cy, RING, 1, fade(0x70566886, a));
+            HudStyle.arc(g, ringX, cy, RING, trail, fade(0xff8196b5, a));
+            HudStyle.arc(g, ringX, cy, RING, hp, fade(gold > 0 ? ABSORPTION : accent, a));
+            float textScale = 6.5f / 11;
+            String hpVal = FigmaFont.fitMedium(hp(health + gold), (int)(RING * 2 - 3), textScale);
+            float tw = FigmaFont.mediumWidth(hpVal, textScale);
+            HudStyle.text(g, hpVal, ringX - tw / 2f, cy, fade(HudStyle.TEXT, a), 6.5f, true);
         }
-        String hpVal = hp(health + gold);
-        float tw = FigmaFont.mediumWidth(hpVal, 7f / 11);
-        HudStyle.text(g, hpVal, ringX - tw / 2f, ringY, fade(HudStyle.TEXT, a), 7f, true);
     }
 
     private static void referenceItem(GuiGraphicsExtractor g, ItemStack stack, float x, float y) {

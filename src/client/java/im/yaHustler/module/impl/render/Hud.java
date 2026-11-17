@@ -75,13 +75,13 @@ public final class Hud extends Module {
     public final BooleanSetting arrayListMovement = add(new BooleanSetting("ArrayList Movement", true).visibleWhen(() -> false));
     public final BooleanSetting arrayListPlayer = add(new BooleanSetting("ArrayList Player", true).visibleWhen(() -> false));
     public final BooleanSetting arrayListMisc = add(new BooleanSetting("ArrayList Misc", false).visibleWhen(() -> false));
-    private final Watermark watermarkElement = element(new Watermark(position("watermark.x", 6), position("watermark.y", 6)), "watermarkElement");
-    private final Potions potionsElement = element(new Potions(position("potions.x", 6), position("potions.y", 27)), "potionsElement");
-    private final TargetHud targetElement = element(new TargetHud(position("target.x", 200), position("target.y", 150)), "targetElement");
-    private final HotKeys hotkeysElement = element(new HotKeys(Hustle26.MODULES, position("hotkeys.x", 6), position("hotkeys.y", 100)), "hotkeysElement");
-    private final Cooldowns cooldownsElement = element(new Cooldowns(position("cooldowns.x", 6), position("cooldowns.y", 160)), "cooldownsElement");
-    private final Staff staffElement = element(new Staff(position("staff.x", 6), position("staff.y", 205)), "Staff");
-    private final Notifications notificationsElement = element(new Notifications(position("notifications.x", 250), position("notifications.y", 60)), "Notifications");
+    private final Watermark watermarkElement = element(new Watermark(positionX("watermark.x", HudElement.CENTER), position("watermark.y", 7)), "watermarkElement");
+    private final Potions potionsElement = element(new Potions(positionX("potions.x", 7), position("potions.y", 92)), "potionsElement");
+    private final TargetHud targetElement = element(new TargetHud(positionX("target.x", HudElement.CENTER), position("target.y", 125)), "targetElement");
+    private final HotKeys hotkeysElement = element(new HotKeys(Hustle26.MODULES, positionX("hotkeys.x", 7), position("hotkeys.y", 42)), "hotkeysElement");
+    private final Cooldowns cooldownsElement = element(new Cooldowns(positionX("cooldowns.x", HudElement.RIGHT), position("cooldowns.y", 92)), "cooldownsElement");
+    private final Staff staffElement = element(new Staff(positionX("staff.x", HudElement.RIGHT), position("staff.y", 42)), "Staff");
+    private final Notifications notificationsElement = element(new Notifications(positionX("notifications.x", HudElement.RIGHT), position("notifications.y", 145)), "Notifications");
     private final List<HudElement> active = new java.util.ArrayList<>(7);
     private HudElement dragged;
     private double dragOffsetX, dragOffsetY;
@@ -90,6 +90,9 @@ public final class Hud extends Module {
 
     private NumberSetting position(String name, double value) {
         return add(new NumberSetting(name, value, 0, 8192, 1).visibleWhen(() -> false));
+    }
+    private NumberSetting positionX(String name, double value) {
+        return add(new NumberSetting(name, value, HudElement.RIGHT, 8192, 1).visibleWhen(() -> false));
     }
     private <T extends HudElement> T element(T element, String name) {
         element.scaleSetting(add(new NumberSetting(name + ".scale", 1, .4, 2.5, .05).visibleWhen(() -> false)));

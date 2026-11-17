@@ -46,17 +46,18 @@ public final class Cooldowns extends HudElement {
         entries.sort(Comparator.comparing(e -> e.id.toString()));
         if (entries.isEmpty() && !editing && (o == null || !o.emptyLists.enabled())) return;
         width = 84;
-        for (Entry e : entries) width = Math.max(width, (int) Math.ceil(PAD * 2 + (icons ? 14 : 0) + FigmaFont.width(e.name, SCALE) + (showTime ? 10 + FigmaFont.width(e.time, SCALE) : 0)));
+        for (Entry e : entries) width = Math.max(width, (int) Math.ceil(PAD * 2 + (icons ? 14 : 0) + FigmaFont.width(e.name, SCALE) + (showTime ? 20 + FigmaFont.width(e.time, SCALE) : 0)));
         height = entries.isEmpty() ? HEADER : HEADER + entries.size() * ROW + 4;
         size(width, height);
     }
     @Override
     protected void draw(GuiGraphicsExtractor g, Minecraft client, int x, int y) {
         HudStyle.panel(g, x, y, width, height);
-        HudStyle.header(g, x, y, width, "Cooldowns", "clock", !entries.isEmpty());
+        HudStyle.header(g, x, y, width, "Кулдауны", "clock", !entries.isEmpty());
         for (int i = 0; i < entries.size(); i++) {
             Entry e = entries.get(i);
             int ry = y + HEADER + 3 + i * ROW;
+            HudStyle.row(g, x, ry - 1, width);
             if (icons && !e.item.isEmpty()) {
                 g.pose().pushMatrix();
                 g.pose().translate(x + PAD, ry);
@@ -65,7 +66,12 @@ public final class Cooldowns extends HudElement {
                 g.pose().popMatrix();
             }
             FigmaFont.draw(g, e.name, x + PAD + (icons ? 14 : 0), ry + 2, HudStyle.textColor(), SCALE);
-            if (showTime) FigmaFont.draw(g, e.time, x + width - PAD - FigmaFont.width(e.time, SCALE), ry + 2, HudStyle.accent(), SCALE);
+            if (showTime) {
+                float timeX = x + width - PAD - FigmaFont.width(e.time, SCALE);
+                HudStyle.arc(g, timeX - 6, ry + 5.5f, 3.3f, 1, 0xff465570);
+                HudStyle.arc(g, timeX - 6, ry + 5.5f, 3.3f, e.progress, HudStyle.accent());
+                FigmaFont.draw(g, e.time, timeX, ry + 2, HudStyle.TEXT, SCALE);
+            }
         }
     }
     private record Entry(Identifier id, ItemStack item, String name, String time, float progress) {}
