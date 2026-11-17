@@ -2,9 +2,7 @@ package im.yaHustler.ui;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import im.yaHustler.Hustle26;
-import im.yaHustler.font.Fonts;
 import im.yaHustler.font.FigmaFont;
-import im.yaHustler.font.Icons;
 import im.yaHustler.module.Category;
 import im.yaHustler.module.Module;
 import im.yaHustler.module.ModuleRegistry;
@@ -24,16 +22,42 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 
 public final class ClickGuiScreen extends Screen {
-    private final java.util.Map<Object, Float> toggleAnim = new java.util.HashMap<>();
     private long lastFrameNanos;
     private float frameSeconds;
-    private static final int HEADER = 38, CARD_H = 28, GAP_Y = 6;
-    private static final int HUD_PANEL = 0xff171816, HUD_FIELD = 0x30101412, HUD_PILL = 0x32101412,
-        HUD_TEXT = 0xfff1f3ef, HUD_MUTED = 0xffa8afa9, HUD_RULE = 0x12ffffff;
-    private static final int NUMBER_H = 32, MODE_H = 27, BOOL_H = 26, COLOR_H = 26, SETTINGS_PAD = 6;
-    private int textColor, mutedColor, dimColor, accentColor, accent2Color, lineColor, cardColor, cardHoverColor,
-        descColor, labelColor, expandedColor, fieldColor, fieldHoverColor, popupBorderColor, popupColor;
+    private static final int HEADER = 40, CARD_H = 34, GAP_Y = 8, FOOTER = 43, WINDOW_RADIUS = 13;
+    private static final int HUD_PANEL = 0xff101521, HUD_FIELD = 0xff141c2b, HUD_PILL = 0xff192334,
+        HUD_TEXT = 0xfff0f4fc, HUD_MUTED = 0xffa2b1c9, HUD_RULE = 0x1affffff;
+    private static final int SETTINGS_PAD = 6;
+    private int textColor, mutedColor, accentColor, lineColor, cardColor, cardHoverColor, popupBorderColor;
     private enum View { MODULES, COSMETICS, THEMES, CONFIGS, EVENTS }
+    private enum Tab {
+        COMBAT(Category.COMBAT, "combat"), MOVEMENT(Category.MOVEMENT, "movement"),
+        PLAYER(Category.PLAYER, "player"), RENDER(Category.RENDER, "visuals"),
+        MISC(Category.MISC, "misc"), COSMETICS(View.COSMETICS, "Cosmetics", "user"),
+        CONFIGS(View.CONFIGS, "Configs", "config"), THEMES(View.THEMES, "Themes", "theme"),
+        EVENTS(View.EVENTS, "Events", "activity"), BOTS(null, "Bots", "monitor");
+
+        final View view;
+        final Category category;
+        final String title, icon;
+
+        Tab(Category category, String icon) {
+            this(View.MODULES, category, category.label, icon);
+        }
+
+        Tab(View view, String title, String icon) {
+            this(view, null, title, icon);
+        }
+
+        Tab(View view, Category category, String title, String icon) {
+            this.view = view;
+            this.category = category;
+            this.title = title;
+            this.icon = icon;
+        }
+    }
+    private static final Tab[] TABS = Tab.values();
+    private static final int TAB_HEIGHT = 22, TAB_PAD = 4;
     private View view = View.MODULES;
     private final GuiCosmeticsPage cosmeticsPage = new GuiCosmeticsPage();
     private im.yaHustler.setting.KeySetting actionBinding;
@@ -45,12 +69,9 @@ public final class ClickGuiScreen extends Screen {
     private String createError = "";
     private final ModuleRegistry registry;
     private static Category category = Category.COMBAT;
-    private final String today = java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy.MM.dd"));
-    private static final Category[] COLUMNS = {Category.COMBAT, Category.MOVEMENT, Category.PLAYER, Category.RENDER, Category.MISC};
-    private static final int[] NAV_Y = {47, 63, 79, 95, 111};
     private int scroll, contentHeight;
     private float visibleScroll;
-    private int columnWidth, columnGap, sidebarWidth;
+    private int columnWidth, columns;
     private SmoothSearchBox search;
     private int x, y, panelWidth, panelHeight;
     private boolean favoritesOnly;
@@ -59,12 +80,11 @@ public final class ClickGuiScreen extends Screen {
     private Category visibleCategory;
     private boolean visibleFavorites;
     private List<Module> visibleModules = List.of();
-    private final List<CategoryHit> categoryHits = new ArrayList<>();
     private final List<ModuleHit> moduleHits = new ArrayList<>();
     private List<Module> layoutModules;
     private int[] layoutHeights = new int[0];
     private ModuleGridLayout.Placement[] layoutCards = new ModuleGridLayout.Placement[0];
-    private int layoutX = Integer.MIN_VALUE, layoutY, layoutWidth, layoutSidebar, layoutPanelHeight, layoutScroll;
+    private int layoutX = Integer.MIN_VALUE, layoutY, layoutWidth, layoutPanelHeight, layoutScroll;
     private final java.util.Map<Module, Float> expandAnim = new java.util.HashMap<>();
     private final List<SettingHit> settingHits = new ArrayList<>();
     private static final java.util.Set<Module> expanded = new java.util.HashSet<>();
@@ -80,14 +100,9 @@ public final class ClickGuiScreen extends Screen {
     private float scrollGrab;
     private static int windowDx, windowDy;
     private float visibility() { return windowFrame.opacity(); }
-    private int pageIndex() { return pageIndex(view, category); }
-    private static int pageIndex(View view, Category category) {
-        if (view == View.COSMETICS) return 5;
-        if (view == View.CONFIGS) return 6;
-        if (view == View.THEMES) return 7;
-        if (view == View.EVENTS) return 8;
-        for (int i = 0; i < COLUMNS.length; i++) if (COLUMNS[i] == category) return i;
-        return 0;
+    private static Tab tabFor(View view, Category category) {
+        for (Tab tab : TABS) if (tab.view == view && (view != View.MODULES || tab.category == category)) return tab;
+        return Tab.COMBAT;
     }
     private void navigate(View nextView, Category nextCategory) {
         if (pendingView == nextView && pendingCategory == nextCategory) return;
@@ -95,7 +110,7 @@ public final class ClickGuiScreen extends Screen {
         cosmeticsPage.release();
         pendingView = nextView;
         pendingCategory = nextCategory;
-        pendingDirection = pageIndex(nextView, nextCategory) >= pageIndex() ? 1 : -1;
+        pendingDirection = tabFor(nextView, nextCategory).ordinal() >= tabFor(view, category).ordinal() ? 1 : -1;
         long now = System.nanoTime();
         pageMotion.leave(now, pendingDirection);
         pageFrame = pageMotion.sample(now);
@@ -138,23 +153,23 @@ public final class ClickGuiScreen extends Screen {
     public ClickGuiScreen(ModuleRegistry registry) {
         super(Component.literal("Hustle 26.3"));
         this.registry = registry;
-        for (Module module : registry.all()) {
-            if (!module.enabled()) { expanded.remove(module); continue; }
-            if (hasSettings(module)) { expanded.add(module); expandAnim.put(module, 1f); }
-        }
+        for (Module module : expanded) expandAnim.put(module, 1f);
     }
     @Override
     protected void init() {
         String previousQuery = search == null ? "" : search.getValue();
         if (search != null) search.setFocused(false);
-        panelWidth = 472; panelHeight = 324;
-        sidebarWidth = 100; columnGap = 8;
-        columnWidth = (panelWidth - sidebarWidth - 16 - columnGap) / 2;
+        panelWidth = Math.clamp(width - 32, 344, 560);
+        panelHeight = Math.clamp(height - 24, 260, 360);
+        int nextColumns = contentWidth() >= 480 ? 3 : 2;
+        if (columns != nextColumns) layoutModules = null;
+        columns = nextColumns;
+        columnWidth = (contentWidth() - GAP_Y * (columns - 1)) / columns;
         x = (width - panelWidth) / 2 + windowDx;
         y = (height - panelHeight) / 2 + windowDy;
-        search = new SmoothSearchBox(searchBoxX() + 16, y + 6,
-            searchBoxWidth() - 22, 16, "Поиск модулей", "Search modules...");
-        search.textScale(6.7f / 11);
+        search = new SmoothSearchBox(searchBoxX() + 20, y + 9,
+            searchBoxWidth() - 26, 20, "Поиск", "Поиск…");
+        search.textScale(7.5f / 11);
         search.visible = search.active = true;
         search.useFigmaFont();
         search.setValue(previousQuery);
@@ -165,19 +180,13 @@ public final class ClickGuiScreen extends Screen {
         addRenderableWidget(profileName);
         rebuildHitboxes();
     }
-    private int searchBoxWidth() { return 104; }
-    private int searchBoxX() { return x + panelWidth - 10 - searchBoxWidth(); }
-    private int contentX() { return x + sidebarWidth + 8; }
+    private int searchBoxWidth() { return 124; }
+    private int favoriteX() { return x + panelWidth - 32; }
+    private int searchBoxX() { return favoriteX() - 6 - searchBoxWidth(); }
+    private int contentX() { return x + 12; }
     private int contentTop() { return y + HEADER; }
-    private int contentBottom() { return y + panelHeight - 4; }
-    private int contentWidth() { return panelWidth - sidebarWidth - 16; }
-    private int systemY() { return y + panelHeight - 132; }
-    private int cosmeticsY() { return systemY() + 12; }
-    private int configY() { return systemY() + 28; }
-    private int themeY() { return systemY() + 44; }
-    private int eventsY() { return systemY() + 60; }
-    private int botsY() { return systemY() + 76; }
-    private static String categoryTitle(Category cat) { return cat == Category.THEMES ? "Theme" : cat.label; }
+    private int contentBottom() { return y + panelHeight - FOOTER; }
+    private int contentWidth() { return panelWidth - 24; }
     private List<Module> visible() {
         if (!moduleView()) return List.of();
         String query = search.getValue();
@@ -185,7 +194,6 @@ public final class ClickGuiScreen extends Screen {
         if (revision != visibleRevision) {
             expanded.retainAll(registry.all());
             expandAnim.keySet().retainAll(registry.all());
-            toggleAnim.keySet().retainAll(registry.all());
             groupedSettings.keySet().retainAll(registry.all());
             rowLayouts.clear();
         }
@@ -219,7 +227,7 @@ public final class ClickGuiScreen extends Screen {
         if (style == null || style.shadow.enabled()) Draw.shadow(g, sx, sy + 2, w, h, radius,
             style == null ? .65f : style.shadowStrength.floatValue() / 100, style == null ? 8 : style.shadowSize.floatValue());
         Draw.roundedF(g, sx, sy, w, h, radius,
-            InterfaceTheme.alpha(InterfaceTheme.tint(HUD_PANEL, themeBlur(), .08f), optionsOpacity() * .68f));
+            InterfaceTheme.alpha(InterfaceTheme.tint(HUD_PANEL, themeBlur(), .10f), optionsOpacity() * .92f));
     }
     private MouseButtonEvent localEvent(MouseButtonEvent e) { GuiTransform t = transform(); return new MouseButtonEvent(t.uiX(e.x()), t.uiY(e.y()), e.buttonInfo()); }
     public boolean resizeGesture(double vertical) {
@@ -231,8 +239,6 @@ public final class ClickGuiScreen extends Screen {
     }
     private int dialogX() { return x + (panelWidth - 240) / 2; }
     private int dialogY() { return y + (panelHeight - 98) / 2; }
-    private void openConfigs() { navigate(View.CONFIGS, category); }
-    private void openThemes() { navigate(View.THEMES, category); }
     private void createProfile() { creatingProfile = true; createError = ""; profileName.visible = profileName.active = true; profileName.setValue(""); search.visible = search.active = false; setFocused(profileName); profileName.setFocused(true); }
     private void closeCreate() { creatingProfile = false; profileName.visible = profileName.active = false; profileName.setFocused(false); search.visible = search.active = true; clearFocus(); }
     private void saveCreatedProfile() { createError = configsPage.create(profileName.getValue().strip()); if (createError.isEmpty()) closeCreate(); }
@@ -242,10 +248,10 @@ public final class ClickGuiScreen extends Screen {
         Draw.rounded(g, dx - 1, dy - 1, 242, 100, 9, ColorUtil.alpha(accentColor, 120));
         Draw.rounded(g, dx, dy, 240, 98, 8, ColorUtil.opaque(FigmaGuiRenderer.panelColor()));
         FigmaFont.drawMedium(g, "Создать конфиг", dx + 12, dy + 12, textColor, .95f);
-        Draw.rounded(g, dx + 10, dy + 30, 220, 22, 5, fieldColor);
+        Draw.rounded(g, dx + 10, dy + 30, 220, 22, 5, HUD_FIELD);
         FigmaFont.draw(g, FigmaFont.fit(createError, 216, .5f), dx + 12, dy + 57, 0xffffa0ad, .5f);
         Draw.rounded(g, dx + 12, dy + 71, 103, 19, 5, accentColor);
-        Draw.rounded(g, dx + 124, dy + 71, 104, 19, 5, fieldColor);
+        Draw.rounded(g, dx + 124, dy + 71, 104, 19, 5, HUD_FIELD);
         FigmaFont.drawMedium(g, "Создать", dx + 42, dy + 77, textColor, .7f);
         FigmaFont.draw(g, "Отмена", dx + 157, dy + 77, textColor, .7f);
     }
@@ -271,15 +277,7 @@ public final class ClickGuiScreen extends Screen {
         return CARD_H + Math.round(expandProgress(module) * settingsHeight(module));
     }
     private void rebuildHitboxes() {
-        boolean moved = layoutX != x || layoutY != y || layoutWidth != columnWidth
-            || layoutSidebar != sidebarWidth || layoutPanelHeight != panelHeight;
-        if (moved) {
-            categoryHits.clear();
-            for (int c = 0; c < COLUMNS.length; c++)
-                categoryHits.add(new CategoryHit(COLUMNS[c], x + 7, y + NAV_Y[c], sidebarWidth - 14, 16));
-            categoryHits.add(new CategoryHit(Category.COSMETICS, x + 7, cosmeticsY(), sidebarWidth - 14, 16));
-            categoryHits.add(new CategoryHit(Category.THEMES, x + 7, themeY(), sidebarWidth - 14, 16));
-        }
+        boolean moved = layoutX != x || layoutY != y || layoutWidth != columnWidth || layoutPanelHeight != panelHeight;
         List<Module> modules = visible();
         boolean changed = modules != layoutModules;
         if (layoutHeights.length != modules.size()) { layoutHeights = new int[modules.size()]; changed = true; }
@@ -288,33 +286,28 @@ public final class ClickGuiScreen extends Screen {
             if (layoutHeights[i] != height) { layoutHeights[i] = height; changed = true; }
         }
         if (changed) {
-            layoutCards = ModuleGridLayout.pack(layoutHeights, GAP_Y);
+            layoutCards = ModuleGridLayout.pack(layoutHeights, GAP_Y, columns);
             layoutModules = modules;
             contentHeight = ModuleGridLayout.contentHeight(layoutCards);
         }
         scroll = Math.clamp(scroll, 0, Math.max(0, contentHeight - (contentBottom() - contentTop())));
         if (!changed && !moved && layoutScroll == scroll) return;
-        layoutX = x; layoutY = y; layoutWidth = columnWidth; layoutSidebar = sidebarWidth;
+        layoutX = x; layoutY = y; layoutWidth = columnWidth;
         layoutPanelHeight = panelHeight; layoutScroll = scroll;
         moduleHits.clear();
         for (int i = 0; i < modules.size(); i++) {
             var card = layoutCards[i];
-            moduleHits.add(new ModuleHit(modules.get(i), contentX() + card.column() * (columnWidth + columnGap), contentTop() + card.top() - scroll, columnWidth, card.height()));
+            moduleHits.add(new ModuleHit(modules.get(i), contentX() + card.column() * (columnWidth + GAP_Y), contentTop() + card.top() - scroll, columnWidth, card.height()));
         }
     }
     private void refreshColors() {
         textColor = HUD_TEXT;
-        mutedColor = descColor = labelColor = HUD_MUTED;
-        dimColor = 0xff98a59c;
-        accentColor = accent2Color = FigmaGuiRenderer.accent();
+        mutedColor = HUD_MUTED;
+        accentColor = FigmaGuiRenderer.accent();
         lineColor = HUD_RULE;
-        cardColor = InterfaceTheme.alpha(0x0cffffff, optionsOpacity());
-        cardHoverColor = InterfaceTheme.alpha(0x15ffffff, optionsOpacity());
-        expandedColor = cardColor;
-        fieldColor = 0x70151a17;
-        fieldHoverColor = Draw.lerp(fieldColor, accentColor, .12f);
+        cardColor = InterfaceTheme.alpha(0xff182132, optionsOpacity());
+        cardHoverColor = InterfaceTheme.alpha(0xff202c40, optionsOpacity());
         popupBorderColor = ColorUtil.alpha(accentColor, 40);
-        popupColor = 0xf019201c;
     }
     @Override
     public void extractBackground(GuiGraphicsExtractor g, int mx, int my, float delta) {
@@ -323,22 +316,73 @@ public final class ClickGuiScreen extends Screen {
         if (minecraft.gui.screen() instanceof ThemePickerScreen picker) return new float[][]{main, picker.popupSurface()};
         if (minecraft.gui.screen() instanceof HudEditorScreen editor) return new float[][]{main, editor.popupSurface()};
         return new float[][]{main}; }
-    public float backdropRadius() { return 7 * transform().scale(); }
-    private void navItem(GuiGraphicsExtractor g, int nx, int ny, int nw, int nh, String label, String icon,
-                         Category cat, boolean selected, int mx, int my) {
-        boolean hot = Draw.inside(mx, my, nx, ny, nw, nh);
-        float hover = animation.animate01("nav:hover:" + label, hot ? 1 : 0, 22, 0);
-        if (!selected && hover > .001f) Draw.roundedF(g, nx, ny, nw, nh, 4, ColorUtil.alpha(0x101412, Math.round(34 * hover)));
-        int color = selected ? textColor : Draw.lerp(mutedColor, 0xffd9ddda, hover);
-        String texture = cat == null ? (label.equals("Events") ? "activity" : "config") : switch (cat) {
-            case COMBAT -> "combat"; case MOVEMENT -> "movement"; case RENDER -> "visuals";
-            case PLAYER -> "player"; case MISC -> "misc"; case THEMES -> "theme"; case COSMETICS, BOTS -> "user";
-        };
-        InterfaceAssets.icon(g, texture, nx + 5.5f, ny + 4.5f, 7, selected ? accentColor : color);
-        float labelY = ny + (nh - FigmaFont.mediumHeight(7f / 11)) / 2;
-        if (selected) FigmaFont.drawMedium(g, label, nx + 18, labelY, color, 7f / 11);
-        else FigmaFont.draw(g, label, nx + 18, labelY, color, 7f / 11);
+    public float backdropRadius() { return WINDOW_RADIUS * transform().scale(); }
+    private int tabWidth(Tab tab, Tab selected) {
+        return tab == selected ? 24 + (int)Math.ceil(FigmaFont.mediumWidth(tab.title, .66f)) : 22;
     }
+
+    private int dockWidth(Tab selected) {
+        int result = TAB_PAD * 2 + 8;
+        for (Tab tab : TABS) result += tabWidth(tab, selected);
+        return result;
+    }
+
+    private int dockX(Tab selected) { return x + (panelWidth - dockWidth(selected)) / 2; }
+    private int dockY() { return y + panelHeight - TAB_HEIGHT - TAB_PAD * 2 - 7; }
+
+    private void drawDock(GuiGraphicsExtractor g, int mx, int my) {
+        Tab selected = tabFor(view, category);
+        int left = dockX(selected), top = dockY(), dockWidth = dockWidth(selected);
+        Draw.rounded(g, left, top, dockWidth, TAB_HEIGHT + TAB_PAD * 2, 9, HUD_FIELD);
+        Draw.roundedOutline(g, left, top, dockWidth, TAB_HEIGHT + TAB_PAD * 2, 9, .6f, lineColor);
+        int ty = top + TAB_PAD, tx = left + TAB_PAD;
+        float cy = ty + TAB_HEIGHT / 2f;
+        for (Tab tab : TABS) {
+            if (tab == Tab.COSMETICS) {
+                Draw.fillF(g, tx + 3.5f, cy - 6, .5f, 12, lineColor);
+                tx += 8;
+            }
+            int tw = tabWidth(tab, selected);
+            boolean active = tab == selected;
+            boolean hover = Draw.inside(mx, my, tx, ty, tw, TAB_HEIGHT);
+            int color = active ? accentColor : hover ? textColor : mutedColor;
+            if (active || hover) Draw.rounded(g, tx, ty, tw, TAB_HEIGHT, 6,
+                active ? ColorUtil.alpha(accentColor, 46) : cardHoverColor);
+            InterfaceAssets.centeredIcon(g, tab.icon, active ? tx + 10.5f : tx + tw / 2f, cy, 9, color);
+            if (active) FigmaFont.drawMedium(g, tab.title, tx + 20, cy - FigmaFont.mediumHeight(.66f) / 2, color, .66f);
+            tx += tw;
+        }
+    }
+
+    private Tab tabAt(double mx, double my) {
+        Tab selected = tabFor(view, category);
+        int tx = dockX(selected) + TAB_PAD, ty = dockY() + TAB_PAD;
+        for (Tab tab : TABS) {
+            if (tab == Tab.COSMETICS) tx += 8;
+            int tw = tabWidth(tab, selected);
+            if (Draw.inside(mx, my, tx, ty, tw, TAB_HEIGHT)) return tab;
+            tx += tw;
+        }
+        return null;
+    }
+
+    private void drawHeader(GuiGraphicsExtractor g) {
+        int hx = contentX(), cy = y + 19;
+        Draw.rounded(g, hx, cy - 10, 20, 20, 6, ColorUtil.alpha(accentColor, 30));
+        InterfaceAssets.icon(g, "brand", hx + 3, cy - 7, 14, accentColor);
+        FigmaFont.drawMedium(g, "Hustle", hx + 28, cy - FigmaFont.mediumHeight(.94f) / 2, textColor, .94f);
+        float focus = animation.animate01("search:focus", search.isFocused() ? 1 : 0, 18, 0);
+        int searchColor = Draw.lerp(HUD_FIELD, Draw.lerp(HUD_FIELD, accentColor, .20f), focus);
+        Draw.rounded(g, searchBoxX(), search.getY(), searchBoxWidth(), search.getHeight(), 6, searchColor);
+        FigmaGuiRenderer.searchIcon(g, searchBoxX() + 6, cy - 4, 8, Draw.lerp(mutedColor, accentColor, focus));
+        if (moduleView()) {
+            Draw.rounded(g, favoriteX(), y + 9, 20, 20, 6,
+                favoritesOnly ? ColorUtil.alpha(accentColor, 46) : HUD_FIELD);
+            InterfaceAssets.centeredIcon(g, "like", favoriteX() + 10, cy, 8, favoritesOnly ? accentColor : mutedColor);
+        }
+        Draw.fillF(g, hx, y + 33, contentWidth(), .5f, lineColor);
+    }
+
     private void photoSwitch(GuiGraphicsExtractor g, float x, float y, float enabled) {
         int knob = ColorUtil.luminance(accentColor) > .8f ? 0xff1a1f1c : 0xfff8faf9;
         Draw.smoothShape(g, x, y, 18, 10, 5, false, Draw.lerp(0x24ffffff, accentColor, enabled));
@@ -350,31 +394,59 @@ public final class ClickGuiScreen extends Screen {
         Draw.roundedF(g, left, centerY - 4.75f, pillWidth(text), 9.5f, 3, background);
         FigmaFont.draw(g, text, left + 3.5f, centerY - FigmaFont.height(scale) / 2, color, scale);
     }
-    private static String plural(int n, String one, String few, String many) {
-        int mod10 = n % 10, mod100 = n % 100;
-        if (mod10 == 1 && mod100 != 11) return one;
-        return mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14) ? few : many;
+    private String bindLabel(Module module) {
+        if (module == binding) return "…";
+        return module.hasKey() ? FigmaFont.fit(module.keyName(), 32, .59f) : "";
     }
-    private String moduleLabel(Module module, int cardWidth) {
-        String keyName = module == binding ? "..." : module.keyName();
-        int tagWidth = keyName.isEmpty() ? 0 : (int)Math.ceil(pillWidth(keyName)) + 5;
-        return FigmaFont.fitMedium(module.name(), cardWidth - 47 - tagWidth, 8.1f / 11);
+
+    private float bindWidth(String name) { return 18 + FigmaFont.width(name, .59f); }
+    private float bindRight(ModuleHit hit) { return hit.x + hit.w - (hasSettings(hit.module) ? 44 : 28); }
+
+    private void drawModuleCard(GuiGraphicsExtractor g, ModuleHit hit, int mx, int my, boolean contentHovered) {
+        Module module = hit.module;
+        boolean headerHover = contentHovered && Draw.inside(mx, my, hit.x, hit.y, hit.w, CARD_H);
+        float enabledTarget = module.enabled() ? 1f : 0f;
+        float enabled = animation.animate01("module:enabled:" + module.id(), enabledTarget, 22, enabledTarget);
+        float over = animation.animate01("module:hover:" + module.id(), headerHover ? 1 : 0, 20, 0);
+        int radius = moduleRadius();
+        Draw.rounded(g, hit.x, hit.y, hit.w, hit.h, radius, Draw.lerp(cardColor, cardHoverColor, over));
+        Draw.roundedOutline(g, hit.x, hit.y, hit.w, hit.h, radius, .65f,
+            Draw.lerp(lineColor, ColorUtil.alpha(accentColor, 78), enabled));
+
+        float cy = hit.y + CARD_H / 2f;
+        float boxX = hit.x + hit.w - 23;
+        Draw.roundedF(g, boxX, cy - 8, 16, 16, 5, Draw.lerp(HUD_FIELD, accentColor, enabled));
+        Draw.roundedOutline(g, boxX, cy - 8, 16, 16, 5, .6f, lineColor);
+        int ink = ColorUtil.luminance(accentColor) > .55f ? HUD_PANEL : HUD_TEXT;
+        InterfaceAssets.centeredIcon(g, "checkmark", boxX + 8, cy, 7, Draw.lerp(0xff52647f, ink, enabled));
+        if (hasSettings(module)) {
+            InterfaceAssets.centeredIcon(g, expanded.contains(module) ? "arrow_up" : "arrow",
+                boxX - 8, cy, 5, mutedColor);
+        }
+
+        String key = bindLabel(module);
+        float keyRight = bindRight(hit), keyX = keyRight - bindWidth(key);
+        Draw.roundedF(g, keyX, cy - 6.5f, bindWidth(key), 13, 4,
+            binding == module ? ColorUtil.alpha(accentColor, 65) : HUD_PILL);
+        InterfaceAssets.centeredIcon(g, "keyboard", keyX + 7, cy, 8, module.hasKey() ? accentColor : mutedColor);
+        if (!key.isEmpty()) FigmaFont.draw(g, key, keyX + 14, cy - FigmaFont.height(.59f) / 2, textColor, .59f);
+
+        int titleWidth = (int)keyX - hit.x - 15;
+        String label = FigmaFont.fitMedium(module.name(), titleWidth, .77f);
+        boolean described = !module.description().isBlank();
+        FigmaFont.drawMedium(g, label, hit.x + 9, hit.y + (described ? 7 : 12), textColor, .77f);
+        if (described) {
+            String description = FigmaFont.fitRegular(module.description(), titleWidth, .57f);
+            FigmaFont.drawRegular(g, description, hit.x + 9, hit.y + 20, mutedColor, .57f);
+        }
+
+        float open = expandProgress(module);
+        if (open <= 0f) return;
+        Draw.fillF(g, hit.x + 6, hit.y + CARD_H, hit.w - 12, .5f, ColorUtil.alpha(0xffffff, Math.round(26 * open)));
+        float settingsAlpha = GuiOpacity.push(open);
+        try { drawSettings(g, hit, mx, my); } finally { GuiOpacity.restore(settingsAlpha); }
     }
-    private void moduleSwitch(GuiGraphicsExtractor g, ModuleHit hit, float enabled) {
-        float nameCenter = hit.y + 7 + FigmaFont.mediumHeight(8.1f / 11) / 2;
-        photoSwitch(g, hit.x + hit.w - 25, nameCenter - 5, enabled);
-    }
-    private void sidebarLogo(GuiGraphicsExtractor g) {
-        float nameScale = 8.5f / 11, versionScale = 6.5f / 11;
-        float nameWidth = FigmaFont.mediumWidth("Hustle 26.3", nameScale);
-        float groupWidth = 20 + 6 + nameWidth + 4 + FigmaFont.width("26.3", versionScale);
-        float left = x + (sidebarWidth - groupWidth) / 2, cy = y + 16;
-        InterfaceAssets.icon(g, "brand", left, cy - 10, 20, accentColor);
-        FigmaFont.drawMedium(g, "Hustle 26.3", left + 26, cy - FigmaFont.mediumHeight(nameScale) / 2,
-            textColor, nameScale);
-        FigmaFont.draw(g, "26.3", left + 30 + nameWidth, cy - FigmaFont.mediumHeight(versionScale) / 2,
-            mutedColor, versionScale);
-    }
+
     @Override
     public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float delta) {
         long now = System.nanoTime();
@@ -382,57 +454,19 @@ public final class ClickGuiScreen extends Screen {
         windowFrame = windowMotion.frame(now);
         if (windowFrame.finished()) { super.onClose(); return; }
         animation.beginFrame(minecraft.getFps());
+        float previousOpacity = GuiOpacity.push(visibility());
+        g.fill(0, 0, g.guiWidth(), g.guiHeight(), GuiOpacity.color(0x55070b13));
         GuiTransform t = transform();
         g.pose().pushMatrix(); g.pose().translate(t.offsetX(), t.offsetY()); g.pose().scale(t.scale(), t.scale());
-        float previousOpacity = GuiOpacity.push(visibility());
         try { drawMenu(g, (int) t.uiX(mouseX), (int) t.uiY(mouseY), delta); }
         finally { GuiOpacity.restore(previousOpacity); g.pose().popMatrix(); }
     }
     private void drawMenu(GuiGraphicsExtractor g, int mouseX, int mouseY, float delta) {
         refreshColors();
-        float opacity = optionsOpacity();
-        drawSurface(g, x, y, panelWidth, panelHeight, 7);
-        g.enableScissor(x + 1, y + 1, x + panelWidth - 1, y + panelHeight - 1);
-        Draw.roundedF(g, x + 1, y + 1, sidebarWidth - 1, panelHeight - 2, 6, InterfaceTheme.alpha(0x1f101412, opacity));
-        Draw.fillF(g, x + sidebarWidth, y + 1, .5f, panelHeight - 2, lineColor);
-        sidebarLogo(g);
-        FigmaFont.draw(g, "MODULES", x + 11, y + 38.5f, ColorUtil.alpha(mutedColor, 150), 5f / 11);
-        FigmaFont.draw(g, "CLIENT", x + 11, systemY() + .5f, ColorUtil.alpha(mutedColor, 150), 5f / 11);
-        rebuildHitboxes();
-        float selectedY = view == View.EVENTS ? eventsY() : configY();
-        for (CategoryHit hit : categoryHits)
-            if (hit.category == Category.THEMES ? view == View.THEMES : hit.category == Category.COSMETICS ? view == View.COSMETICS : view == View.MODULES && category == hit.category) selectedY = hit.y;
-        float activeY = animation.animate("nav:selection:y", selectedY, 24, selectedY);
-        Draw.roundedF(g, x + 7, activeY, sidebarWidth - 14, 16, 4, InterfaceTheme.alpha(0x43101412, opacity));
-        for (CategoryHit hit : categoryHits) navItem(g, hit.x, hit.y, hit.w, hit.h,
-            categoryTitle(hit.category), hit.category.icon, hit.category, hit.category == Category.THEMES ? view == View.THEMES : hit.category == Category.COSMETICS ? view == View.COSMETICS : view == View.MODULES && category == hit.category, mouseX, mouseY);
-        navItem(g, x + 7, configY(), sidebarWidth - 14, 16, "Configs", Icons.UTILITY, null, view == View.CONFIGS, mouseX, mouseY);
-        navItem(g, x + 7, eventsY(), sidebarWidth - 14, 16, "Events", Icons.UTILITY, null, view == View.EVENTS, mouseX, mouseY);
-        navItem(g, x + 7, botsY(), sidebarWidth - 14, 16, Category.BOTS.label, Category.BOTS.icon, Category.BOTS, false, mouseX, mouseY);
-        int userY = y + panelHeight - 29;
-        Draw.fillF(g, x + 9, userY - 7, sidebarWidth - 18, .5f, lineColor);
-        if (minecraft.player != null) {
-            var skin = minecraft.player.getSkin().body().texturePath();
-            g.pose().pushMatrix(); g.pose().translate(x + 11, userY); g.pose().scale(2, 2);
-            for (int u : new int[]{8, 40}) im.yaHustler.ui.GuiTextures.blit(g, im.yaHustler.font.MsdfPipeline.head(), skin,
-                0, 0, u, 8, 8, 8, 8, 8, 64, 64, GuiOpacity.color(0xffffffff));
-            g.pose().popMatrix();
-            FigmaFont.drawMedium(g, FigmaFont.fitMedium(minecraft.player.getName().getString(), sidebarWidth - 45, 7f / 11), x + 32, userY + 2, textColor, 7f / 11);
-        }
-        FigmaFont.draw(g, today, x + 32, userY + 11, ColorUtil.alpha(mutedColor, 190), 6f / 11);
-        String title = view == View.COSMETICS ? "Cosmetics" : view == View.THEMES ? "Theme" : view == View.CONFIGS ? "Configs" : view == View.EVENTS ? "Events" : categoryTitle(category);
-        String headerIcon = view == View.MODULES ? switch (category) { case COMBAT -> "combat"; case MOVEMENT -> "movement"; case PLAYER -> "player"; case RENDER -> "visuals"; default -> "misc"; } : view == View.COSMETICS ? "user" : view == View.THEMES ? "theme" : view == View.CONFIGS ? "config" : "activity";
-        int headerX = contentX();
-        float titleScale = 7.8f / 11;
-        InterfaceAssets.centeredIcon(g, headerIcon, headerX + 5, y + 14, 9, accentColor);
-        FigmaFont.drawMedium(g, title, headerX + 15, y + 14 - FigmaFont.mediumHeight(titleScale) / 2, textColor, titleScale);
-        float searchFocus = animation.animate01("search:focus", search.isFocused() ? 1 : 0, 18, 0);
-        Draw.searchSurface(g, searchBoxX(), search.getY(), searchBoxWidth(), search.getHeight(),
-            InterfaceTheme.alpha(Draw.lerp(0x3e101412, ColorUtil.alpha(accentColor, 0x48), searchFocus), opacity));
-        int searchIconColor = Draw.lerp(mutedColor, accentColor, searchFocus);
-        FigmaGuiRenderer.searchIcon(g, searchBoxX() + 4, search.getY() + (search.getHeight() - 9) / 2f, 9, searchIconColor);
-        Draw.fillF(g, x + sidebarWidth + 1, y + 28, panelWidth - sidebarWidth - 2, .5f, lineColor);
-        g.disableScissor();
+        drawSurface(g, x, y, panelWidth, panelHeight, WINDOW_RADIUS);
+        Draw.roundedOutline(g, x, y, panelWidth, panelHeight, WINDOW_RADIUS, .7f, lineColor);
+        drawHeader(g);
+        drawDock(g, mouseX, mouseY);
         long now = System.nanoTime();
         frameSeconds = lastFrameNanos == 0 ? 0f : Math.min(.1f, (now - lastFrameNanos) / 1e9f);
         lastFrameNanos = now;
@@ -466,39 +500,12 @@ public final class ClickGuiScreen extends Screen {
             settingHits.clear();
             for (ModuleHit hit : moduleHits) {
                 if (hit.y + pageFrame.y() + hit.h <= contentTop() || hit.y + pageFrame.y() >= contentBottom()) continue;
-                boolean hover = contentHovered && Draw.inside(pageMouseX, pageMouseY, hit.x, hit.y, hit.w, hit.h);
-                float open = expandProgress(hit.module);
-                boolean headerHover = hover && pageMouseY < hit.y + CARD_H;
-                float targetEnabled = hit.module.enabled() ? 1f : 0f;
-                float enabled = toggleAnim.getOrDefault(hit.module, targetEnabled);
-                enabled = animation.animate01("module:enabled:" + hit.module.id(), targetEnabled, 22, targetEnabled);
-                toggleAnim.put(hit.module, enabled);
-                float cardHover = animation.animate01("module:hover:" + hit.module.id(), headerHover ? 1 : 0, 20, 0);
-                Draw.rounded(g, hit.x, hit.y, hit.w, hit.h, moduleRadius(), Draw.lerp(cardColor, cardHoverColor, cardHover));
-                Draw.roundedOutline(g, hit.x, hit.y, hit.w, hit.h, moduleRadius(), 0.5f, 0x18ffffff);
-                String keyName = hit.module == binding ? "..." : hit.module.keyName();
-                float nameScale = 8.1f / 11;
-                int tagW = keyName.isEmpty() ? 0 : (int) Math.ceil(FigmaFont.width(keyName, 6.5f / 11)) + 5;
-                String moduleLabel = moduleLabel(hit.module, hit.w);
-                FigmaFont.drawMedium(g, moduleLabel, hit.x + 7, hit.y + 7, Draw.lerp(0xffcdd2ce, textColor, Math.max(enabled, headerHover ? 1 : 0)), nameScale);
-                float nameEnd = hit.x + 7 + FigmaFont.mediumWidth(moduleLabel, nameScale);
-                if (tagW > 0) {
-                    boolean listening = hit.module == binding;
-                    hudPill(g, keyName, hit.x + hit.w - 30 - pillWidth(keyName), hit.y + 7 + FigmaFont.mediumHeight(nameScale) / 2,
-                        listening ? ColorUtil.alpha(accentColor, 0x60) : HUD_PILL, listening ? 0xffffffff : accentColor);
-                }
-                FigmaFont.drawRegular(g, FigmaFont.fitRegular(hit.module.description(), hit.w - 18, 6.6f / 11), hit.x + 7, hit.y + 18, descColor, 6f / 11);
-                moduleSwitch(g, hit, enabled);
-                if (open > 0f) {
-                    Draw.fillF(g, hit.x + 6, hit.y + CARD_H, hit.w - 12, .5f, ColorUtil.alpha(0xffffffff, Math.round(18 * open)));
-                    float settingsAlpha = GuiOpacity.push(open);
-                    try { drawSettings(g, hit, pageMouseX, pageMouseY); } finally { GuiOpacity.restore(settingsAlpha); }
-                }
+                drawModuleCard(g, hit, pageMouseX, pageMouseY, contentHovered);
             }
         } finally { GuiOpacity.restore(pageOpacity); g.pose().popMatrix(); g.disableScissor(); }
         pageOpacity = GuiOpacity.push(pageFrame.opacity());
         try { drawScrollbar(g); } finally { GuiOpacity.restore(pageOpacity); }
-        g.enableScissor(x + sidebarWidth + 1, y + 29, x + panelWidth - 1, y + panelHeight - 1);
+        g.enableScissor(contentX(), contentTop(), contentX() + contentWidth(), contentBottom());
         g.pose().pushMatrix(); g.pose().translate(pageFrame.x(), pageFrame.y());
         pageOpacity = GuiOpacity.push(pageFrame.opacity());
         try { drawDropdown(g, pageMouseX, pageMouseY); }
@@ -533,7 +540,8 @@ public final class ClickGuiScreen extends Screen {
     }
     private void drawSettings(GuiGraphicsExtractor g, ModuleHit hit, int mouseX, int mouseY) {
         int settingsOffset = CARD_H + 3;
-        int top = Math.max(hit.y + settingsOffset, contentTop()), bottom = Math.min(hit.y + hit.h, contentBottom());
+        int top = Math.max(hit.y + settingsOffset, (int)Math.ceil(contentTop() - pageFrame.y()));
+        int bottom = Math.min(hit.y + hit.h, (int)Math.floor(contentBottom() - pageFrame.y()));
         if (bottom <= top) return;
         g.enableScissor(hit.x, top, hit.x + hit.w, bottom);
         float px = hit.x + 8, pw = hit.w - 16;
@@ -577,8 +585,13 @@ public final class ClickGuiScreen extends Screen {
                     if (clickable) settingHits.add(new SettingHit(m, bx, by, 68, controlH, -1, 0));
                     if (openMode == m && clickable) {
                         dropdownWidth = Math.min(contentWidth(), Math.max(68, (int)Math.ceil(m.modes().stream().mapToDouble(v -> FigmaFont.width(v, 6.5f/11)).max().orElse(0)) + (m instanceof BooleanGroup?25:12)));
-                        dropdownX = Math.min(bx, x + panelWidth - 4 - dropdownWidth); dropdownRows = Math.min(9, m.modes().size()); dropdownY = by + controlH + 2;
-                        if (dropdownY + dropdownRows * 13 + 2 > y + panelHeight - 3) dropdownY = by - dropdownRows * 13 - 3;
+                        dropdownX = Math.min(bx, contentX() + contentWidth() - dropdownWidth);
+                        int spaceBelow = contentBottom() - (by + controlH + 2 + (int)Math.ceil(pageFrame.y()));
+                        int spaceAbove = by + (int)Math.floor(pageFrame.y()) - contentTop() - 3;
+                        boolean below = spaceBelow >= spaceAbove || spaceBelow >= m.modes().size() * 13 + 2;
+                        dropdownRows = Math.clamp((Math.max(spaceBelow, spaceAbove) - 2) / 13, 1, Math.min(9, m.modes().size()));
+                        dropdownScroll = Math.clamp(dropdownScroll, 0, m.modes().size() - dropdownRows);
+                        dropdownY = below ? by + controlH + 2 : by - dropdownRows * 13 - 3;
                     }
                 }
                 case BooleanSetting b -> {
@@ -629,14 +642,17 @@ public final class ClickGuiScreen extends Screen {
     }
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-        GuiTransform t = transform();
-        var hud = registry.get(im.yaHustler.module.impl.render.Hud.class);
-        if (hud != null && !Draw.inside(t.uiX(event.x()), t.uiY(event.y()), x, y, panelWidth, panelHeight)) {
-            if (event.button() == InputConstants.MOUSE_BUTTON_RIGHT && hud.openElementSettings(event.x(), event.y())) return true;
-            if (event.button() == InputConstants.MOUSE_BUTTON_LEFT && hud.beginDrag(event.x(), event.y())) return true;
-        }
         if (windowMotion.closing()) return true;
-        if(actionBinding!=null) { actionBinding.set(-100-event.button());actionBinding=null;return true; }
+        if (actionBinding != null) {
+            actionBinding.set(-100 - event.button());
+            actionBinding = null;
+            return true;
+        }
+        if (binding != null && event.button() > InputConstants.MOUSE_BUTTON_MIDDLE) {
+            binding.setKey(-100 - event.button());
+            binding = null;
+            return true;
+        }
         return clickMenu(localEvent(event), doubleClick);
     }
     private boolean clickMenu(MouseButtonEvent event, boolean doubleClick) {
@@ -645,7 +661,7 @@ public final class ClickGuiScreen extends Screen {
         double pageMx = pageFrame.localX(mx), pageMy = pageFrame.localY(my);
         boolean left = event.button() == InputConstants.MOUSE_BUTTON_LEFT;
         boolean right = event.button() == InputConstants.MOUSE_BUTTON_RIGHT;
-        if (openMode != null && left) {
+        if (openMode != null && left && Draw.inside(mx, my, contentX(), contentTop(), contentWidth(), contentBottom() - contentTop())) {
             if (Draw.inside(pageMx, pageMy, dropdownX, dropdownY, dropdownWidth, dropdownRows * 13 + 2)) {
                 int row = Math.clamp((int)(pageMy - dropdownY - 1) / 13, 0, dropdownRows - 1);
                 openMode.set(openMode.modes().get(dropdownScroll + row)); if(!(openMode instanceof BooleanGroup))openMode = null; return true;
@@ -681,6 +697,7 @@ public final class ClickGuiScreen extends Screen {
             }
             return super.mouseClicked(event, doubleClick);
         }
+        Module previousBinding = binding;
         binding = null;
         if (!left && !right) return super.mouseClicked(event, doubleClick);
         rebuildHitboxes();
@@ -689,34 +706,27 @@ public final class ClickGuiScreen extends Screen {
             if (inContent) {
                 for (ModuleHit hit : moduleHits) {
                     if (Draw.inside(pageMx, pageMy, hit.x, hit.y, hit.w, CARD_H)) {
-                        if (hasSettings(hit.module)) toggleExpanded(hit.module);
+                        if (overBind(hit, pageMx, pageMy)) hit.module.setKey(-1);
+                        else if (hasSettings(hit.module)) toggleExpanded(hit.module);
                         clearFocus(); return true;
                     }
                 }
             }
             return super.mouseClicked(event, doubleClick);
         }
-        if (Draw.inside(mx, my, x + 7, configY(), sidebarWidth - 14, 16)) {
-            clearFocus(); openConfigs(); return true;
-        }
-        if (Draw.inside(mx, my, x + 7, eventsY(), sidebarWidth - 14, 16)) {
-            clearFocus(); navigate(View.EVENTS, category); return true;
-        }
-        if (Draw.inside(mx, my, x + 7, botsY(), sidebarWidth - 14, 16)) {
+        Tab tab = tabAt(mx, my);
+        if (tab != null) {
             clearFocus();
-            minecraft.gui.setScreen(new BotScreen(this));
+            if (tab == Tab.BOTS) minecraft.gui.setScreen(new BotScreen(this));
+            else navigate(tab.view, tab.category == null ? category : tab.category);
             return true;
         }
-        for (CategoryHit hit : categoryHits) {
-            if (Draw.inside(mx, my, hit.x, hit.y, hit.w, hit.h)) {
-                clearFocus();
-                if (hit.category == Category.THEMES) openThemes();
-                else if (hit.category == Category.COSMETICS) navigate(View.COSMETICS, category);
-                else {
-                    navigate(View.MODULES, hit.category);
-                }
-                return true;
-            }
+        if (moduleView() && Draw.inside(mx, my, favoriteX(), y + 9, 20, 20)) {
+            favoritesOnly = !favoritesOnly;
+            scroll = 0;
+            visibleScroll = 0;
+            clearFocus();
+            return true;
         }
         if (inContent && view == View.COSMETICS) { clearFocus(); return cosmeticsPage.click(pageMx,pageMy,event.button()); }
         if (inContent && view == View.EVENTS) return eventsPage.click(pageMx, pageMy);
@@ -745,13 +755,11 @@ public final class ClickGuiScreen extends Screen {
                 if (pageMy < hit.y + CARD_H) {
                     if (InputConstants.isKeyDown(InputConstants.KEY_LSHIFT) || InputConstants.isKeyDown(InputConstants.KEY_RSHIFT))
                         hit.module.setFavorite(!hit.module.favorite());
-                    else {
-                        if (hit.module instanceof im.yaHustler.module.impl.render.ClickGui) toggleExpanded(hit.module);
-                        else {
-                            hit.module.toggle();
-                            if (hasSettings(hit.module)) { if (hit.module.enabled()) expanded.add(hit.module); else expanded.remove(hit.module); }
-                        }
-                    }
+                    else if (overBind(hit, pageMx, pageMy)) binding = previousBinding == hit.module ? null : hit.module;
+                    else if (hit.module instanceof im.yaHustler.module.impl.render.ClickGui
+                        || hasSettings(hit.module) && pageMx >= hit.x + hit.w - 40 && pageMx < hit.x + hit.w - 24) {
+                        toggleExpanded(hit.module);
+                    } else hit.module.toggle();
                 }
                 clearFocus(); return true;
             }
@@ -764,6 +772,10 @@ public final class ClickGuiScreen extends Screen {
         if (!search.isMouseOver(mx, my)) clearFocus();
         return super.mouseClicked(event, doubleClick);
     }
+    private boolean overBind(ModuleHit hit, double mx, double my) {
+        float right = bindRight(hit), w = bindWidth(bindLabel(hit.module));
+        return Draw.inside(mx, my, right - w, hit.y + (CARD_H - 13) / 2f, w, 13);
+    }
     private void updateScrollbar(double mouseY) {
         float[] bar = scrollbar(); float travel = contentBottom() - contentTop() - bar[3];
         scroll = Math.round(Math.clamp(((float)mouseY - contentTop() - scrollGrab) / Math.max(1, travel), 0, 1) * Math.max(0, contentHeight - (contentBottom() - contentTop())));
@@ -772,15 +784,13 @@ public final class ClickGuiScreen extends Screen {
     @Override
     public boolean mouseDragged(MouseButtonEvent raw, double dx, double dy) {
         if (windowMotion.closing() || pendingView != null) return true;
-        var hud = registry.get(im.yaHustler.module.impl.render.Hud.class);
-        if (hud != null && hud.drag(raw.x(), raw.y(), width, height)) return true;
         MouseButtonEvent event = localEvent(raw); dx /= transform().scale(); dy /= transform().scale();
         if(view==View.COSMETICS && cosmeticsPage.drag(pageFrame.localX(event.x()),pageFrame.localY(event.y()),dx,dy))return true;
         if (draggingScrollbar) { updateScrollbar(event.y()); return true; }
         if (draggingWindow) {
             x += (int) Math.round(dx); y += (int) Math.round(dy);
             windowDx = x - (width - panelWidth) / 2; windowDy = y - (height - panelHeight) / 2;
-            search.setX(searchBoxX() + 16); search.setY(y + 6);
+            search.setX(searchBoxX() + 20); search.setY(y + 9);
             return true;
         }
         if (draggingSlider != null) {
@@ -791,8 +801,6 @@ public final class ClickGuiScreen extends Screen {
     }
     @Override
     public boolean mouseReleased(MouseButtonEvent raw) {
-        var hud = registry.get(im.yaHustler.module.impl.render.Hud.class);
-        if (hud != null && hud.endDrag(raw.x(), raw.y(), width, height)) return true;
         MouseButtonEvent event = localEvent(raw);
         if(cosmeticsPage.release())return true;
         if (draggingScrollbar) { draggingScrollbar = false; return true; }
@@ -870,7 +878,6 @@ public final class ClickGuiScreen extends Screen {
     }
     @Override public void removed() { if (search != null) search.setFocused(false); if (profileName != null) profileName.setFocused(false); super.removed(); }
     @Override public boolean isPauseScreen() { return false; }
-    private record CategoryHit(Category category, int x, int y, int w, int h) {}
     private record SettingHit(Setting<?> setting, int x, int y, int w, int h, float trackX, float trackW) {}
     private record ModuleHit(Module module, int x, int y, int w, int h) {}
 }

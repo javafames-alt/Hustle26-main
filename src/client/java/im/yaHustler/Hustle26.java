@@ -146,9 +146,6 @@ public final class Hustle26 implements ClientModInitializer {
         HudElementRegistry.replaceElement(VanillaHudElements.MOB_EFFECTS, vanilla -> (g, delta) -> {
             if (!hud.replacesVanillaEffects()) vanilla.extractRenderState(g, delta);
         });
-        HudElementRegistry.replaceElement(VanillaHudElements.HOTBAR, vanilla -> (g, delta) -> {
-            if (hud.replacesVanillaHotbar() && net.minecraft.client.Minecraft.getInstance().player != null && !net.minecraft.client.Minecraft.getInstance().player.isSpectator()) hud.extractHotbar(g, delta); else vanilla.extractRenderState(g, delta);
-        });
         ScreenEvents.AFTER_INIT.register((client, screen, width, height) -> {
             if (!(screen instanceof ChatScreen)) return;
             ScreenMouseEvents.allowMouseClick(screen).register((s, event) ->

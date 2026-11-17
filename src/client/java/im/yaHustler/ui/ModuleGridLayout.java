@@ -1,14 +1,17 @@
 package im.yaHustler.ui;
 
-/** Independent even/odd columns used by the donor's ModuleGridSection. */
+/** Packs each column independently so an open card does not shift its neighbors sideways. */
 public final class ModuleGridLayout {
     public record Placement(int column, int top, int height) {}
     private ModuleGridLayout() {}
     public static Placement[] pack(int[] heights, int gap) {
+        return pack(heights, gap, 2);
+    }
+    public static Placement[] pack(int[] heights, int gap, int columns) {
         Placement[] result = new Placement[heights.length];
-        int[] top = new int[2];
+        int[] top = new int[columns];
         for (int i = 0; i < heights.length; i++) {
-            int column = i % 2, height = Math.max(0, heights[i]);
+            int column = i % columns, height = Math.max(0, heights[i]);
             result[i] = new Placement(column, top[column], height);
             top[column] += height + gap;
         }
