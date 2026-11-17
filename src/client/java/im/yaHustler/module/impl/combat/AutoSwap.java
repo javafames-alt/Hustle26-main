@@ -21,8 +21,13 @@ public final class AutoSwap extends Module {
     private static final int MAX_WHEEL_SLOTS=8;
     public final ModeSetting mod=add(new ModeSetting("Мод","Дуо","Дуо","Колесо"));
     public final KeySetting button=add(new KeySetting("Кнопка").visibleWhen(this::duoMode));
-    public final ModeSetting itemMode=add(new ModeSetting("Предмет","Талисман","Талисман","Сфера").visibleWhen(this::duoMode));
-    public final ModeSetting swapToMode=add(new ModeSetting("Свапать на","Сфера","Талисман","Сфера").visibleWhen(this::duoMode));
+    private static final String[] ITEMS = {"Талисман", "Сфера", "Щит", "Тотем", "Фейерверк", "Золотое яблоко",
+        "Любая еда", "Доспехи Ареса", "Сила Зевса", "Чешуя Василиска", "Защитный панцирь", "Крыло Василиска",
+        "Тотем Ареса", "Тотем Диониса", "Тотем спешки", "Гнев богов"};
+    public final ModeSetting itemMode=add(new ModeSetting("Предмет","Талисман", ITEMS).visibleWhen(this::duoMode));
+    public final ModeSetting swapToMode=add(new ModeSetting("Свапать на","Сфера", ITEMS).visibleWhen(this::duoMode));
+    private final BooleanSetting ignoreNormalTotems = add(new BooleanSetting("Игнорировать обычные тотемы", true)
+        .visibleWhen(() -> duoMode() && (itemMode.is("Тотем") || swapToMode.is("Тотем"))));
     public final ModeSetting server=add(new ModeSetting("Сервер","HW","HW","FT").visibleWhen(this::duoMode));
     public final BooleanSetting separateSwaps=add(new BooleanSetting("Отдельные свапы",false).visibleWhen(this::duoMode));
     public final KeySetting cerberusSphereBind=add(new KeySetting("Сфера цербера").visibleWhen(()->duoMode()&&separateSwaps.enabled()&&server.is("HW")));
@@ -61,9 +66,10 @@ public final class AutoSwap extends Module {
         if(firstList.isEmpty()&&secondList.isEmpty()){Notifications.post("AutoSwap: предметы для свапа не найдены",null);return;}
         InvItem first=firstList.isEmpty()?null:firstList.getFirst(),second=secondList.isEmpty()?null:secondList.getFirst();
         ItemStack offhand=mc.player.getOffhandItem();
-        boolean holdsFirst=first!=null&&isSameItemType(offhand,first.stack),holdsSecond=second!=null&&isSameItemType(offhand,second.stack);
-        InvItem target=holdsFirst&&!holdsSecond?(second!=null?second:first):holdsSecond&&!holdsFirst?(first!=null?first:second):(first!=null?first:second);
-        if(target!=null)doSwap(mc,target.slot,target.stack);
+        boolean holdsFirst = matchesItem(itemMode.get(), offhand);
+        boolean holdsSecond = matchesItem(swapToMode.get(), offhand);
+        InvItem target = holdsFirst && !holdsSecond && second != null ? second : first != null ? first : second;
+        if(target!=null && !isSameItemType(offhand, target.stack))doSwap(mc,target.slot,target.stack);
     }
     private void swapDualSpheresHW(Minecraft mc){
         List<InvItem> spheres=findItems(mc,"Сфера");
@@ -91,15 +97,25 @@ public final class AutoSwap extends Module {
     private List<InvItem> findItems(Minecraft mc,String type){
         List<InvItem> result=new ArrayList<>();
         for(Slot slot:mc.player.inventoryMenu.slots){
-            if(slot.index==45)continue;
+            if(slot.container != mc.player.getInventory() || slot.getContainerSlot() >= 36 || !slot.mayPickup(mc.player))continue;
             ItemStack stack=slot.getItem();
             if(stack.isEmpty())continue;
-            if("Сфера".equalsIgnoreCase(type)){
-                if(isSphere(stack)&&(!separateSwaps.enabled()||!server.is("HW")||!isCerberusSphere(stack)))result.add(new InvItem(slot.index,stack));
-            }else if(isTalisman(stack)&&(!separateSwaps.enabled()||!server.is("FT")||!isVortexTalisman(stack)))result.add(new InvItem(slot.index,stack));
+            if (matchesItem(type, stack)) result.add(new InvItem(slot.index,stack));
         }
         result.sort(Comparator.comparing(item->!item.stack.isEnchanted()));
         return result;
+    }
+    private boolean matchesItem(String type, ItemStack stack) {
+        return switch (type) {
+            case "Сфера" -> isSphere(stack) && (!separateSwaps.enabled() || !server.is("HW") || !isCerberusSphere(stack));
+            case "Талисман" -> isTalisman(stack) && (!separateSwaps.enabled() || !server.is("FT") || !isVortexTalisman(stack));
+            case "Щит" -> stack.is(Items.SHIELD);
+            case "Тотем" -> stack.is(Items.TOTEM_OF_UNDYING) && (!ignoreNormalTotems.enabled() || stack.hasFoil());
+            case "Фейерверк" -> stack.is(Items.FIREWORK_ROCKET);
+            case "Золотое яблоко" -> stack.is(Items.GOLDEN_APPLE) || stack.is(Items.ENCHANTED_GOLDEN_APPLE);
+            case "Любая еда" -> stack.has(net.minecraft.core.component.DataComponents.FOOD);
+            default -> stack.getHoverName().getString().toLowerCase(Locale.ROOT).contains(type.toLowerCase(Locale.ROOT));
+        };
     }
     private static boolean isSameItemType(ItemStack a,ItemStack b){
         if(a.isEmpty()||b.isEmpty()||a.getItem()!=b.getItem())return false;

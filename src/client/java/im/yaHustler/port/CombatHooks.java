@@ -27,6 +27,8 @@ public final class CombatHooks implements IMinecraft {
     private CombatHooks() {}
 
     public static void beginTick() {
+        var mace = Hustle26.MODULES.get(im.yaHustler.module.impl.combat.AutoMace.class);
+        if (mace != null && !mace.enabled()) mace.restoreAttackSwap(mc, true);
         var rwHelper = Hustle26.MODULES.get(im.yaHustler.module.impl.misc.RWHelper.class);
         if (rwHelper != null) rwHelper.restoreWhileDisabled();
         if (session != mc.player) {
@@ -41,6 +43,7 @@ public final class CombatHooks implements IMinecraft {
     }
 
     public static void disconnect() {
+        im.yaHustler.module.impl.combat.rotation.CombatTagManager.reset();
         PacketBufferManager.INSTANCE.reset();
         for (var port : SUBSCRIPTIONS.handlers(PortSubscriptions.Hook.DISCONNECT)) {
             port.onDisconnect(new EventDisconnect());
@@ -129,6 +132,8 @@ public final class CombatHooks implements IMinecraft {
     }
 
     public static void attacked(Entity target) {
+        if (target instanceof net.minecraft.world.entity.player.Player)
+            im.yaHustler.module.impl.combat.rotation.CombatTagManager.onAttack(target);
         im.yaHustler.module.impl.combat.aura.rotation.neuro.NeuroRotation.getInstance().recorder().onAttackSubmitted(new EventAttackSubmitted(target));
         im.yaHustler.module.impl.combat.aura.sprint.RwSprintReset.attack();
         for (var port : SUBSCRIPTIONS.handlers(PortSubscriptions.Hook.ATTACK)) {

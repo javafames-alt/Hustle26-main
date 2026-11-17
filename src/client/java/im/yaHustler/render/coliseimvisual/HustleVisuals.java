@@ -33,6 +33,8 @@ public final class HustleVisuals {
         var crystal=Hustle26.MODULES.get(CustomCrystal.class);
         if(crystal!=null) run(crystal::close);
         var hat=Hustle26.MODULES.get(ChinaHat.class);if(hat!=null)run(hat::close);
+        var prediction = Hustle26.MODULES.get(Prediction.class);
+        if (prediction != null) run(prediction::close);
         var better=Hustle26.MODULES.get(BetterMinecraft.class);if(better!=null)run(better::close);
         run(EntityGlowRenderer::closeShared);
         var circles=Hustle26.MODULES.get(JumpCircles.class);
@@ -63,6 +65,8 @@ public final class HustleVisuals {
                 });
                 run(()->EspEffects.render(projection,view));
                 var hat=Hustle26.MODULES.get(ChinaHat.class);if(hat!=null&&hat.enabled())run(()->hat.render(projection,view));
+                var prediction = Hustle26.MODULES.get(Prediction.class);
+                if (prediction != null && prediction.enabled()) run(() -> prediction.render(projection, view, camera.pos));
                 CustomCrystal crystal = Hustle26.MODULES.get(CustomCrystal.class);
                 if (crystal != null) run(crystal::render);
                 Trails trails = Hustle26.MODULES.get(Trails.class);

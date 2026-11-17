@@ -45,7 +45,32 @@ import net.minecraft.world.phys.*;
 public final class CrystalAura extends PortModule {
     private static final String OWNER = "CrystalAura";
     private static final Direction[] HORIZONTAL = {Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST};
-    private final ModeSetting preset = add(new ModeSetting("Пресет", "Grim", "Grim", "DonutSMP", "Без ограничений"));
+    private static final String REALLY_WORLD = "ReallyWorld", DONUT = "DonutSMP";
+    private static final String ATTACK = "Атака", AIM_ONLY = "Наводка", DEFENSE = "Защита от взрывов";
+    private final ModeSetting preset = add(new ModeSetting("Пресет", "Grim", "Grim", REALLY_WORLD, DONUT, "Без ограничений"));
+    private final ModeSetting donutMode = add(new ModeSetting("Режим DonutSMP", ATTACK, ATTACK, AIM_ONLY, DEFENSE)
+        .visibleWhen(() -> preset.is(DONUT)));
+    private final NumberSetting placeRange = add(new NumberSetting("Дистанция установки", 4.5, 3, 6, .1)
+        .visibleWhen(this::portedPreset));
+    private final NumberSetting breakRange = add(new NumberSetting("Дистанция взрыва", 3, 1, 6, .1)
+        .visibleWhen(this::portedPreset));
+    private final NumberSetting cycleDelay = add(new NumberSetting("Задержка в тиках", 0, 0, 5, 1)
+        .visibleWhen(this::portedPreset));
+    private final NumberSetting anchorCharges = add(new NumberSetting("Заряды якоря", 1, 1, 4, 1)
+        .visibleWhen(() -> preset.is(DONUT) && donutMode.is(ATTACK)));
+    private final BooleanSetting throughWalls = add(new BooleanSetting("Действовать сквозь стены", true)
+        .visibleWhen(() -> preset.is(REALLY_WORLD) || aimsOnly()));
+    private final BooleanSetting legitSwap = add(new BooleanSetting("Легитный свап", false)
+        .visibleWhen(() -> preset.is(REALLY_WORLD)));
+    private final NumberSetting aimSpeed = add(new NumberSetting("Скорость наведения", 100, 10, 100, 5)
+        .visibleWhen(this::aimsOnly));
+    private final BooleanSetting autoAim = add(new BooleanSetting("Автонаведение", true).visibleWhen(this::aimsOnly));
+    private final BooleanSetting showPlan = add(new BooleanSetting("Визуализация позиции", true)
+        .visibleWhen(() -> preset.is(DONUT)));
+    private final NumberSetting defenseDamage = add(new NumberSetting("Допустимый урон себе", 8, 0, 20, .5)
+        .visibleWhen(this::defenseOnly));
+    private final NumberSetting defenseHealth = add(new NumberSetting("Остаток здоровья", .5, .5, 10, .5)
+        .visibleWhen(this::defenseOnly));
     private final NumberSetting targetRange = number("Радиус цели", 10, 4, 16, .5);
     private final NumberSetting minDamage = number("Мин. урон", 6, 1, 20, .5);
     private final NumberSetting maxSelfDamage = number("Макс. урон себе", 8, 0, 20, .5);
@@ -115,12 +140,32 @@ public final class CrystalAura extends PortModule {
 
     private NumberSetting number(String name, double value, double min, double max, double step) { return add(new NumberSetting(name, value, min, max, step)); }
     private BooleanSetting flag(String name, boolean value) { return add(new BooleanSetting(name, value)); }
+    private boolean portedPreset() { return preset.is(REALLY_WORLD) || preset.is(DONUT); }
+    private boolean aimsOnly() { return preset.is(DONUT) && donutMode.is(AIM_ONLY); }
+    private boolean defenseOnly() { return preset.is(DONUT) && donutMode.is(DEFENSE); }
     private CrystalProfile settingsProfile() {
-        return CrystalProfile.preset(preset.get());
+        var base = CrystalProfile.preset(preset.get());
+        if (!portedPreset()) return base;
+        boolean reallyWorld = preset.is(REALLY_WORLD);
+        int delay = cycleDelay.intValue() * 50;
+        return new CrystalProfile(base.postMotion(), placeRange.floatValue(), breakRange.floatValue(), base.actions(),
+            Math.max(delay, base.placeDelay()), Math.max(delay, base.breakDelay()),
+            aimsOnly() ? aimSpeed.floatValue() : base.rotationSpeed(),
+            reallyWorld ? legitSwap.enabled() ? Swap.KEEP : Swap.SILENT : base.swap(),
+            base.instantBreak(), base.instantPlace(), base.varyRotation(),
+            (reallyWorld || aimsOnly()) && throughWalls.enabled(), !reallyWorld);
     }
     public Player target() { return enabled() ? target : null; }
     public boolean isCrystalBusy() { return enabled() && !paused() && (Rotations.owns(this) || plan != null || mining != null || !pending.isEmpty()); }
-    public List<Visual> visibleBlocks() { return enabled() && render.enabled() ? List.copyOf(visuals) : List.of(); }
+    public List<Visual> visibleBlocks() {
+        if (!enabled() || !render.enabled()) return List.of();
+        if (!preset.is(DONUT) || !showPlan.enabled() || plan == null || plan.candidate.action == Action.MELEE)
+            return List.copyOf(visuals);
+        var displayed = new ArrayList<>(visuals);
+        displayed.removeIf(visual -> visual.pos.equals(plan.candidate.pos));
+        displayed.add(new Visual(plan.candidate.pos, now(), 0xff68bfff));
+        return List.copyOf(displayed);
+    }
     private int now() { return mc.player == null ? 0 : mc.player.tickCount; }
     private int pingTicks() {
         var info = mc.getConnection() == null || mc.player == null ? null : mc.getConnection().getPlayerInfo(mc.player.getUUID());
@@ -136,7 +181,7 @@ public final class CrystalAura extends PortModule {
 
     @Override public void tick(Minecraft ignored) {
         prepare();
-        if (profile != null && !profile.postMotion() && plan != null && !paused() && aligned(plan)) {
+        if (!aimsOnly() && profile != null && !profile.postMotion() && plan != null && !paused() && aligned(plan)) {
             mc.player.connection.send(new ServerboundMovePlayerPacket.Rot(mc.player.getYRot(), mc.player.getXRot(), mc.player.onGround(), mc.player.horizontalCollision));
             executeBudget();
         }
@@ -153,11 +198,12 @@ public final class CrystalAura extends PortModule {
         targets = mc.level.players().stream().map(p -> (Player) p).filter(this::enemy).sorted(Comparator.comparingDouble(mc.player::distanceToSqr)).limit(6).toList();
         friends = mc.level.players().stream().map(p -> (Player) p).filter(p -> p != mc.player && p.isAlive() && (mc.player.isAlliedTo(p) || im.yaHustler.friend.Friends.contains(p)) && mc.player.distanceToSqr(p) <= 256).toList();
         for (EndCrystal crystal : crystals(12)) confirmCrystal(crystal);
-        plan = selectPlan();
+        plan = defenseOnly() ? defensePlan() : selectPlan();
         if (plan == null) { stopMining(); releaseRotation(); if (now() - lastActive >= 10) restoreSlot(); return; }
         target = plan.target(); lastActive = now();
         if (mining != null && (plan.candidate.action != Action.DIG || !mining.equals(plan.candidate.pos))) stopMining();
-        aim(plan.aim);
+        if (!aimsOnly() || autoAim.enabled()) aim(plan.aim);
+        else releaseRotation();
     }
 
     @Override public void onInput(EventInput event) {
@@ -167,7 +213,7 @@ public final class CrystalAura extends PortModule {
     @Override public void onPostMotion(EventPostMotion event) {
         prepare();
         if (plan == null || paused() || executing) return;
-        if (profile.postMotion()) executeBudget();
+        if (!aimsOnly() && profile.postMotion()) executeBudget();
     }
     private void executeBudget() {
         executing = true;
@@ -177,7 +223,7 @@ public final class CrystalAura extends PortModule {
                 if (!aligned(current) || !execute(current)) break;
                 damage.reset();
                 if (current.candidate.action == Action.DIG) break;
-                plan = selectPlan();
+                plan = defenseOnly() ? defensePlan() : selectPlan();
                 target = plan == null ? current.target : plan.target;
                 // Further actions wait for a server-visible rotation when they require another angle.
                 if (plan != null && !aligned(plan)) break;
@@ -212,8 +258,10 @@ public final class CrystalAura extends PortModule {
             BlockState state = mc.level.getBlockState(pos);
             if (anchors.enabled() && anchorsExplode() && state.is(Blocks.RESPAWN_ANCHOR)) {
                 int charge = state.getValue(RespawnAnchorBlock.CHARGE);
-                if (charge > 0 || has(Items.GLOWSTONE)) candidates.add(new Candidate(charge > 0 ? Action.ANCHOR_EXPLODE : Action.ANCHOR_CHARGE,
-                        pos, Vec3.atCenterOf(pos), 5, null, Set.of(pos), null, charge > 0 ? 3 : 1.5f, 0));
+                int required = preset.is(DONUT) ? anchorCharges.intValue() : 1;
+                boolean charged = charge >= required;
+                if (charged || has(Items.GLOWSTONE)) candidates.add(new Candidate(charged ? Action.ANCHOR_EXPLODE : Action.ANCHOR_CHARGE,
+                        pos, Vec3.atCenterOf(pos), 5, null, Set.of(pos), null, charged ? 3 : 1.5f, 0));
                 continue;
             }
             if (!placeReady) continue;
@@ -455,9 +503,11 @@ public final class CrystalAura extends PortModule {
         for (EndCrystal crystal : crystals(8)) {
             if (attacked.containsKey(crystal.getId())) continue;
             float incoming = damage.damage(crystal.position(), 6, mc.player, predicted(mc.player, true), null, Set.of());
-            if (incoming < shieldDamage.floatValue() && incoming < health(mc.player) - 2) continue;
+            float damageLimit = defenseOnly() ? defenseDamage.floatValue() : shieldDamage.floatValue();
+            float remaining = defenseOnly() ? defenseHealth.floatValue() : 2;
+            if (incoming <= damageLimit && incoming < health(mc.player) - remaining) continue;
             boolean ourThreat = targets.stream().anyMatch(p -> damage.damage(crystal.position(), 6, p, predicted(p, true), null, Set.of()) >= minDamage.floatValue());
-            if (!shield.enabled() && (!crystalDefense.enabled() || ourThreat)) continue;
+            if (!defenseOnly() && !shield.enabled() && (!crystalDefense.enabled() || ourThreat)) continue;
             BlockPos feet = mc.player.blockPosition();
             Plan best = null;
             for (Direction d : HORIZONTAL) for (int dy = 0; dy <= 1; dy++) {
@@ -754,7 +804,8 @@ public final class CrystalAura extends PortModule {
     public void entityAdded(Entity entity) {
         if (!enabled() || !(entity instanceof EndCrystal crystal) || mc.player == null || mc.level == null) return;
         confirmCrystal(crystal);
-        if (profile == null || !profile.instantBreak() || executing || paused() || usedActions >= profile.actions() || !breakReady() || targets.isEmpty()) return;
+        if (aimsOnly() || defenseOnly() || profile == null || !profile.instantBreak() || executing
+            || paused() || usedActions >= profile.actions() || !breakReady() || targets.isEmpty()) return;
         damage.reset();
         Plan immediate = evaluate(new Candidate(Action.BREAK, crystal.blockPosition().below(), crystal.position(), 6, null, Set.of(), crystal, 0, 0));
         if (immediate != null && aligned(immediate)) {

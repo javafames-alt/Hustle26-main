@@ -22,7 +22,13 @@ public abstract class MultiPlayerGameModeMixin {
     }
     @Inject(method="attack",at=@At("HEAD"),cancellable=true)
     private void hustle263$protectFriend(Player player,Entity entity,CallbackInfo ci) {
-        if (im.yaHustler.friend.Friends.contains(entity)) { im.yaHustler.module.impl.combat.rotation.AttackContext.cancelCurrentAttack(); ci.cancel(); }
+        var mace = Hustle26.MODULES.get(im.yaHustler.module.impl.combat.AutoMace.class);
+        var client = net.minecraft.client.Minecraft.getInstance();
+        if (im.yaHustler.friend.Friends.contains(entity)
+            || (player == client.player && mace != null && mace.enabled() && mace.cancelAttack(client, entity))) {
+            im.yaHustler.module.impl.combat.rotation.AttackContext.cancelCurrentAttack();
+            ci.cancel();
+        }
     }
     @Inject(method="startDestroyBlock", at=@At("HEAD"))
     private void hustle263$chooseTool(net.minecraft.core.BlockPos pos, net.minecraft.core.Direction side, org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable<Boolean> cir) {

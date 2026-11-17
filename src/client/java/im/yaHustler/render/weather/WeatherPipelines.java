@@ -30,6 +30,14 @@ public final class WeatherPipelines {
         PrimitiveTopology.TRIANGLES, false, false, false, "SnowfallMatrices", "SkyData");
     public static final RenderPipeline HAT = geometry("weather_hat", DefaultVertexFormat.POSITION_COLOR,
         PrimitiveTopology.QUADS, true, true, false, "EffectMatrices");
+    public static final RenderPipeline WORLD_RIBBON = RenderPipeline.builder()
+        .withLocation(id("pipeline/world_ribbon"))
+        .withVertexShader(id("core/weather/weather_hat")).withFragmentShader(id("core/weather/weather_hat"))
+        .withVertexBinding(0, DefaultVertexFormat.POSITION_COLOR).withPrimitiveTopology(PrimitiveTopology.QUADS)
+        .withBindGroupLayout(HandsFx.layout(b -> HandsFx.ubo(b, "EffectMatrices")))
+        .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
+        .withDepthStencilState(Optional.of(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false, 0, 0)))
+        .withCull(false).build();
     private WeatherPipelines() {}
     private static Identifier id(String path) { return Identifier.fromNamespaceAndPath("hustle263", path); }
     private static RenderPipeline geometry(String name, VertexFormat format, PrimitiveTopology topology,

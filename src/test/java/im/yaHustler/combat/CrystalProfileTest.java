@@ -75,7 +75,7 @@ public final class CrystalProfileTest {
         var preset = (im.yaHustler.setting.ModeSetting) aura.settings().stream().filter(s -> s.name().equals("Пресет")).findFirst().orElseThrow();
         var bind = (im.yaHustler.setting.KeySetting) aura.settings().stream().filter(s -> s.name().equals("Клавиша Surround")).findFirst().orElseThrow();
         assertFalse(aura.enabled()); assertEquals("crystal_aura", aura.id());
-        assertEquals(java.util.List.of("Grim", "DonutSMP", "Без ограничений"), preset.modes());
+        assertEquals(java.util.List.of("Grim", "ReallyWorld", "DonutSMP", "Без ограничений"), preset.modes());
         preset.set("DonutSMP"); bind.set(-102); aura.setFavorite(true);
         java.nio.file.Path profile = directory.resolve("crystal.json");
         im.yaHustler.config.ClientConfig.saveProfile(profile, registry);

@@ -1,6 +1,9 @@
 package im.yaHustler.mixin;
 
+import im.yaHustler.Hustle26;
+import im.yaHustler.module.impl.combat.AimAssist;
 import im.yaHustler.rotation.Look;
+import net.minecraft.client.Minecraft;
 import im.yaHustler.module.impl.combat.aura.rotation.neuro.MotionTrace;
 import net.minecraft.client.MouseHandler;
 import net.minecraft.client.player.LocalPlayer;
@@ -22,7 +25,12 @@ public abstract class MouseHandlerMixin {
     @Redirect(method = "turnPlayer", at = @At(value = "INVOKE",
         target = "Lnet/minecraft/client/player/LocalPlayer;turn(DD)V"))
     private void hustle263$freeLook(LocalPlayer player, double yaw, double pitch) {
-        if (Look.active()) Look.onMouse(yaw, pitch);
+        if (Look.active()) {
+            Look.onMouse(yaw, pitch);
+            return;
+        }
+        var assist = Hustle26.MODULES.get(AimAssist.class);
+        if (assist != null && assist.enabled()) assist.turn(Minecraft.getInstance(), yaw, pitch);
         else player.turn(yaw, pitch);
     }
 }

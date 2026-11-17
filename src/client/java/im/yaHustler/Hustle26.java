@@ -47,6 +47,9 @@ public final class Hustle26 implements ClientModInitializer {
         MODULES.register(new im.yaHustler.module.impl.render.ItemPhysics());
         MODULES.register(new im.yaHustler.module.impl.render.BlockESP());
         MODULES.register(new im.yaHustler.module.impl.combat.AntiBot());
+        MODULES.register(new im.yaHustler.module.impl.combat.AimAssist());
+        MODULES.register(new im.yaHustler.module.impl.combat.TriggerBot());
+        MODULES.register(new im.yaHustler.module.impl.combat.AutoPotion());
         MODULES.register(new im.yaHustler.module.impl.misc.ChestStealer());
         MODULES.register(new im.yaHustler.module.impl.render.Chams());
         im.yaHustler.friend.Friends.load();
@@ -108,6 +111,7 @@ public final class Hustle26 implements ClientModInitializer {
         MODULES.register(new im.yaHustler.module.impl.render.BetterMinecraft());
         MODULES.register(new im.yaHustler.module.impl.render.TotemAngel());
         MODULES.register(new im.yaHustler.module.impl.render.Trails());
+        var prediction = MODULES.register(new im.yaHustler.module.impl.render.Prediction());
         var ambience = MODULES.register(new im.yaHustler.module.impl.render.Ambience());
         var weather = MODULES.register(new im.yaHustler.module.impl.render.Weather(ambience));
         MODULES.hide(ambience);
@@ -133,6 +137,8 @@ public final class Hustle26 implements ClientModInitializer {
         ClientLifecycleEvents.CLIENT_STOPPING.register(client -> im.yaHustler.render.coliseimvisual.HustleVisuals.close());
         HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT,
             Identifier.fromNamespaceAndPath("hustle263", "gps"), im.yaHustler.command.GpsMarker::extractRenderState);
+        HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT,
+            Identifier.fromNamespaceAndPath("hustle263", "prediction"), prediction::extractHud);
         HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT,
             Identifier.fromNamespaceAndPath("hustle263", "tags"), tags::extractRenderState);
         HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT,

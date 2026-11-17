@@ -23,6 +23,11 @@ public final class CombatTagManager {
         lastCombatNanos = System.nanoTime();
     }
 
+    public static void reset() {
+        lastCombatNanos = 0;
+        lastTargetName = "";
+    }
+
     public static boolean isInCombat() {
         if (lastCombatNanos <= 0) return false;
         long elapsed = System.nanoTime() - lastCombatNanos;

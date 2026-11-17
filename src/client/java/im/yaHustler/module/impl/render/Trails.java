@@ -15,9 +15,19 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.MeshData.DrawState;
 import im.yaHustler.module.Category;
+import im.yaHustler.friend.Friends;
 import im.yaHustler.render.coliseimvisual.PortedModule;
 import im.yaHustler.module.ModuleInfo;
 import im.yaHustler.setting.NumberSetting;
+import im.yaHustler.setting.ModeSetting;
+import im.yaHustler.setting.BooleanSetting;
+import im.yaHustler.render.weather.WeatherPass;
+import im.yaHustler.render.weather.WeatherPipelines;
+import java.util.ArrayDeque;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.UUID;
 import im.yaHustler.render.coliseimvisual.GlowQuadRenderer;
 import im.yaHustler.render.coliseimvisual.VisualColors;
 import im.yaHustler.render.coliseimvisual.VisualResources;
@@ -34,12 +44,21 @@ import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.entity.player.Player;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
-@ModuleInfo(id="trails", name="Trails", category=Category.RENDER, description="Следы движения: Призраки")
+@ModuleInfo(id="trails", name="Trails", category=Category.RENDER, description="Следы движения игроков и частицы")
 public class Trails extends PortedModule {
+   private static final String RIBBON = "Шлейф";
+   private final ModeSetting style;
+   private final BooleanSetting showPlayers, showFriends, showSelf, invisible;
+   private final NumberSetting ribbonLength;
+   private final WeatherPass ribbonPass = new WeatherPass();
+   private final Map<UUID, ArrayDeque<RibbonPoint>> ribbons = new HashMap<>();
+   private ClientLevel ribbonWorld;
+   private record RibbonPoint(Vec3 position, float height, long time) {}
    private static final Identifier ID38 = VisualResources.image(Trails.TARGETESP_GLOW);
    private final NumberSetting sliderSetting438;
    private final NumberSetting sliderSetting439;
@@ -255,6 +274,15 @@ public class Trails extends PortedModule {
       this.systemClass175 = new TrailHistory();
       this.renderPipeline74 = GlowQuadRenderer.createGlowPipeline(HUSTLE_TRAILS_GHOSTS, CompareOp.ALWAYS_PASS);
       this.addSettings(this.sliderSetting438, this.sliderSetting439, this.sliderSetting440);
+      style = add(new ModeSetting("Вид следа", ПРИЗРАКИ, ПРИЗРАКИ, RIBBON));
+      sliderSetting438.visibleWhen(() -> !style.is(RIBBON));
+      sliderSetting439.visibleWhen(() -> !style.is(RIBBON));
+      sliderSetting440.visibleWhen(() -> !style.is(RIBBON));
+      showPlayers = add(new BooleanSetting("Игроки", false).visibleWhen(() -> style.is(RIBBON)));
+      showFriends = add(new BooleanSetting("Друзья", true).visibleWhen(() -> style.is(RIBBON)));
+      showSelf = add(new BooleanSetting("Себя", true).visibleWhen(() -> style.is(RIBBON)));
+      invisible = add(new BooleanSetting("Невидимые", false).visibleWhen(() -> style.is(RIBBON)));
+      ribbonLength = add(new NumberSetting("Длина", 2.5, 2, 4, .5).visibleWhen(() -> style.is(RIBBON)));
    }
 
    private void apply893(BufferBuilder var1, Identifier var2, int var3, RenderPipeline var4) {
@@ -331,8 +359,73 @@ public class Trails extends PortedModule {
    @Override
    public void onVisualDisable() {
       this.update469();
+      clearRibbons();
    }
 
-   public void render(WorldRenderFrame event) { if(enabled()) apply897(event); }
+   public void render(WorldRenderFrame event) {
+      if (!enabled()) return;
+      if (style.is(RIBBON)) {
+         update469();
+         renderRibbons(event);
+      } else {
+         if (ribbonWorld != null) clearRibbons();
+         apply897(event);
+      }
+   }
 
+   private void renderRibbons(WorldRenderFrame event) {
+      if (ribbonWorld != mc.level) {
+         ribbons.clear();
+         ribbonWorld = mc.level;
+      }
+      if (ribbonWorld == null || mc.player == null) return;
+      long now = System.nanoTime(), life = (long) (ribbonLength.get() * 100_000_000);
+      float partial = event.partialTick();
+      Vec3 camera = event.cameraPosition();
+      int accent = im.yaHustler.module.impl.themes.Theme.accent() & 0xffffff;
+      var active = new HashSet<UUID>();
+      var vertices = ribbonPass.begin(false);
+      for (Player player : ribbonWorld.players()) {
+         if (!tracks(player)) continue;
+         active.add(player.getUUID());
+         var points = ribbons.computeIfAbsent(player.getUUID(), id -> new ArrayDeque<>());
+         while (!points.isEmpty() && now - points.getFirst().time >= life) points.removeFirst();
+         Vec3 position = player.getPosition(partial).add(0, player.isFallFlying() ? -.1 : .05, 0);
+         if (points.isEmpty() || points.getLast().position.distanceToSqr(position) >= 1e-5) {
+            if (!points.isEmpty() && points.getLast().position.distanceToSqr(position) > 16) points.clear();
+            points.add(new RibbonPoint(position, player.getBbHeight() * (player.isCrouching() ? .8f : 1), now));
+         }
+         RibbonPoint previous = null;
+         for (RibbonPoint point : points) {
+            if (previous != null) {
+               int from = accent | (int) (170 * (1 - (double) (now - previous.time) / life)) << 24;
+               int to = accent | (int) (170 * (1 - (double) (now - point.time) / life)) << 24;
+               ribbonVertex(vertices, previous.position.subtract(camera), 0, from);
+               ribbonVertex(vertices, previous.position.subtract(camera), previous.height, from);
+               ribbonVertex(vertices, point.position.subtract(camera), point.height, to);
+               ribbonVertex(vertices, point.position.subtract(camera), 0, to);
+            }
+            previous = point;
+         }
+      }
+      ribbons.keySet().retainAll(active);
+      ribbonPass.draw(vertices, WeatherPipelines.WORLD_RIBBON,
+         new Matrix4f(event.projectionMatrix()).mul(event.viewMatrix()), null);
+   }
+
+   private boolean tracks(Player player) {
+      if (!player.isAlive() || player.isSpectator() || (player.isInvisible() && !invisible.enabled())) return false;
+      if (player == mc.player) return showSelf.enabled() && !mc.options.getCameraType().isFirstPerson();
+      return Friends.contains(player) ? showFriends.enabled() : showPlayers.enabled();
+   }
+
+   private static void ribbonVertex(BufferBuilder vertices, Vec3 position, float height, int color) {
+      vertices.addVertex((float) position.x, (float) position.y + height, (float) position.z).setColor(color);
+   }
+
+   private void clearRibbons() {
+      ribbons.clear();
+      ribbonWorld = null;
+      ribbonPass.close();
+   }
 }

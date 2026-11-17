@@ -13,6 +13,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.item.PrimedTnt;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.arrow.ThrownTrident;
 import net.minecraft.world.entity.vehicle.minecart.MinecartTNT;
 import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.item.ItemStack;
@@ -34,6 +36,8 @@ public final class AutoTotem extends PortModule {
     private final BooleanSetting falling = add(new BooleanSetting("Падение", false));
     private final BooleanSetting tnt = add(new BooleanSetting("Обычный тнт", false));
     private final BooleanSetting minecart = add(new BooleanSetting("Вагонетка с тнт", false));
+    private final BooleanSetting tridents = add(new BooleanSetting("Трезубцы", true));
+    private final BooleanSetting maces = add(new BooleanSetting("Булавы", true));
     private final BooleanSetting restore = add(new BooleanSetting("Возвращать предмет", false));
     private final NumberSetting returnSpeed = add(new NumberSetting("Скорость обратного свапа", 6, 1, 10, 1));
     private final BooleanSetting preserveHead = add(new BooleanSetting("Не менять шар", false));
@@ -44,6 +48,8 @@ public final class AutoTotem extends PortModule {
     private final NumberSetting anchorRange = add(new NumberSetting("Дистанция до якоря", 6, 1, 10, .5));
     private final NumberSetting cartRange = add(new NumberSetting("Дистанция до вагонетки", 6, 1, 10, .5));
     private final NumberSetting tntRange = add(new NumberSetting("Дистанция до тнт", 10, 3, 50, 1));
+    private final NumberSetting tridentRange = add(new NumberSetting("Дистанция до трезубца", 10, 1, 20, 1).visibleWhen(tridents::enabled));
+    private final NumberSetting maceRange = add(new NumberSetting("Дистанция до булавы", 10, 1, 20, 1).visibleWhen(maces::enabled));
     private ItemStack previous = ItemStack.EMPTY;
     private int originalSlot = -1;
     private int safeTicks;
@@ -116,10 +122,17 @@ public final class AutoTotem extends PortModule {
         var player = client.player;
         if (falling.enabled() && !player.isInWater() && player.fallDistance > 10) return true;
         double range = Math.max(crystalRange.floatValue(), Math.max(cartRange.floatValue(), tntRange.floatValue()));
+        if (tridents.enabled()) range = Math.max(range, tridentRange.get());
+        if (maces.enabled()) range = Math.max(range, maceRange.get());
         for (var entity : client.level.getEntities(player, player.getBoundingBox().inflate(range))) {
             double radius = entity instanceof EndCrystal && crystals.enabled() ? crystalRange.floatValue()
                 : entity instanceof PrimedTnt && tnt.enabled() ? tntRange.floatValue()
-                : entity instanceof MinecartTNT && minecart.enabled() ? cartRange.floatValue() : 0;
+                : entity instanceof MinecartTNT cart && cart.isPrimed() && minecart.enabled() ? cartRange.floatValue()
+                : entity instanceof ThrownTrident trident && tridents.enabled() && trident.getOwner() != player
+                    && !trident.isNoPhysics() && trident.getDeltaMovement().lengthSqr() > 1e-4 ? tridentRange.get()
+                : entity instanceof Player other && maces.enabled() && other.isAlive() && !other.isSpectator()
+                    && !im.yaHustler.friend.Friends.contains(other) && other.getY() > player.getY()
+                    && other.getMainHandItem().is(Items.MACE) ? maceRange.get() : 0;
             if (radius > 0 && player.distanceToSqr(entity) <= radius * radius) return true;
         }
         if (obsidian.enabled()) {
@@ -149,7 +162,8 @@ public final class AutoTotem extends PortModule {
         if (client.player != null && event.getPacket() instanceof net.minecraft.network.protocol.game.ClientboundAddEntityPacket packet) {
             double radius = packet.getType() == net.minecraft.world.entity.EntityTypes.END_CRYSTAL && crystals.enabled() ? crystalRange.floatValue()
                 : packet.getType() == net.minecraft.world.entity.EntityTypes.TNT && tnt.enabled() ? tntRange.floatValue()
-                : packet.getType() == net.minecraft.world.entity.EntityTypes.TNT_MINECART && minecart.enabled() ? cartRange.floatValue() : 0;
+                : packet.getType() == net.minecraft.world.entity.EntityTypes.TRIDENT && tridents.enabled()
+                    && packet.getData() != client.player.getId() && packet.getMovement().lengthSqr() > 1e-4 ? tridentRange.get() : 0;
             if (radius > 0 && client.player.distanceToSqr(packet.getX(), packet.getY(), packet.getZ()) <= radius * radius) incomingThreat = true;
         }
         if (client.player != null && client.level != null && anchors.enabled()

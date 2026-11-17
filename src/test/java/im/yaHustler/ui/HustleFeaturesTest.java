@@ -22,7 +22,8 @@ public class HustleFeaturesTest {
             for (Setting<?> setting : module.settings())
                 assertTrue(setting instanceof ModeSetting || setting instanceof NumberSetting || setting instanceof ColorSetting || setting instanceof BooleanSetting);
         }
-        assertEquals(java.util.List.of("Длина шлейфа","Размер частиц","Скорость призраков"),
+        assertEquals(java.util.List.of("Длина шлейфа", "Размер частиц", "Скорость призраков",
+                "Вид следа", "Игроки", "Друзья", "Себя", "Невидимые", "Длина"),
                 new Trails().settings().stream().map(Setting::name).toList());
     }
     @Test void importedModesAndCustomColorsSurviveProfileRoundTrip() throws Exception {
