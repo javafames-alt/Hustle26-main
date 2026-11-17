@@ -17,7 +17,6 @@ import im.yaHustler.ui.InterfaceTheme;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 
-/** Width-sorted module names with a staggered theme gradient and animated rows. */
 public final class ArrayListHud extends HudElement {
     private static final float PAD = 2.5f, GLOW = 3;
 

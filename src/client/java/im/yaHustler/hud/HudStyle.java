@@ -6,7 +6,6 @@ import im.yaHustler.module.impl.render.Hud;
 import im.yaHustler.ui.*;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 
-/** Port of HustleHud's common glass, header, row and badge styling. */
 public final class HudStyle {
     static final int PANEL = 0xff171816, FIELD = 0x28101412, TEXT = 0xfff1f3ef, MUTED = 0xffa8afa9;
     static Hud options() { return Hustle26.MODULES.get(Hud.class); }
@@ -40,6 +39,7 @@ public final class HudStyle {
         Draw.roundedF(g, x - 1, y - 1, w + 2, h + 2, radius + 1,
             InterfaceTheme.alpha(0x20000000 | rgb, glowAlpha));
         Draw.roundedF(g, x, y, w, h, radius, fill);
+        Draw.roundedOutline(g, x, y, w, h, radius, 0.5f, InterfaceTheme.alpha(0x18ffffff, glowAlpha));
     }
     static void header(GuiGraphicsExtractor g, int x, int y, int w, String title, String icon, boolean rows) {
         boolean icons = options() == null || options().listIcons.enabled();

@@ -12,7 +12,6 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
-/** Uses actual cooldown ticks, including groups whose item has left the inventory. */
 public final class Cooldowns extends HudElement {
     private static final int HEADER = 18, ROW = 15, PAD = 6;
     private static final float SCALE = 6.75f / 11;

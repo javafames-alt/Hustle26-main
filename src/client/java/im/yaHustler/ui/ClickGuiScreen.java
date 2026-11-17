@@ -28,7 +28,6 @@ public final class ClickGuiScreen extends Screen {
     private long lastFrameNanos;
     private float frameSeconds;
     private static final int HEADER = 38, CARD_H = 28, GAP_Y = 6;
-    /** HudStyle tokens: the menu uses the same panels, fields, pills and text colours as the in-game HUD. */
     private static final int HUD_PANEL = 0xff171816, HUD_FIELD = 0x30101412, HUD_PILL = 0x32101412,
         HUD_TEXT = 0xfff1f3ef, HUD_MUTED = 0xffa8afa9, HUD_RULE = 0x12ffffff;
     private static final int NUMBER_H = 32, MODE_H = 27, BOOL_H = 26, COLOR_H = 26, SETTINGS_PAD = 6;
@@ -202,7 +201,6 @@ public final class ClickGuiScreen extends Screen {
     public float blurStrength() { return Math.max(8, options() == null ? 14 : options().blurStrength.floatValue()) * visibility(); }
     public GuiTransform transform() {
         GuiTransform base = GuiTransform.centered(options() == null ? 1f : options().scale.floatValue(), width, height, panelWidth, panelHeight);
-        // Fit first, animate second: otherwise small windows clamp away the entire opening scale.
         float cx=x+panelWidth/2f,cy=y+panelHeight/2f;
         return base.animated(windowFrame.scale(),windowFrame.offsetY(),cx,cy);
     }
@@ -341,13 +339,11 @@ public final class ClickGuiScreen extends Screen {
         if (selected) FigmaFont.drawMedium(g, label, nx + 18, labelY, color, 7f / 11);
         else FigmaFont.draw(g, label, nx + 18, labelY, color, 7f / 11);
     }
-    /** 18x10 toggle of the HUD notifications. */
     private void photoSwitch(GuiGraphicsExtractor g, float x, float y, float enabled) {
         int knob = ColorUtil.luminance(accentColor) > .8f ? 0xff1a1f1c : 0xfff8faf9;
         Draw.smoothShape(g, x, y, 18, 10, 5, false, Draw.lerp(0x24ffffff, accentColor, enabled));
         Draw.smoothShape(g, x + 1.5f + 8 * enabled, y + 1.5f, 7, 7, 3.5f, false, Draw.lerp(HUD_MUTED, knob, enabled));
     }
-    /** HudStyle.pill: dark capsule with accent text. */
     private static float pillWidth(String text) { return FigmaFont.width(text, 6.25f / 11) + 7; }
     private void hudPill(GuiGraphicsExtractor g, String text, float left, float centerY, int background, int color) {
         float scale = 6.25f / 11;
@@ -431,7 +427,6 @@ public final class ClickGuiScreen extends Screen {
         InterfaceAssets.centeredIcon(g, headerIcon, headerX + 5, y + 14, 9, accentColor);
         FigmaFont.drawMedium(g, title, headerX + 15, y + 14 - FigmaFont.mediumHeight(titleScale) / 2, textColor, titleScale);
         float searchFocus = animation.animate01("search:focus", search.isFocused() ? 1 : 0, 18, 0);
-        // HUD field; tinted with the accent while focused.
         Draw.searchSurface(g, searchBoxX(), search.getY(), searchBoxWidth(), search.getHeight(),
             InterfaceTheme.alpha(Draw.lerp(0x3e101412, ColorUtil.alpha(accentColor, 0x48), searchFocus), opacity));
         int searchIconColor = Draw.lerp(mutedColor, accentColor, searchFocus);
@@ -480,6 +475,7 @@ public final class ClickGuiScreen extends Screen {
                 toggleAnim.put(hit.module, enabled);
                 float cardHover = animation.animate01("module:hover:" + hit.module.id(), headerHover ? 1 : 0, 20, 0);
                 Draw.rounded(g, hit.x, hit.y, hit.w, hit.h, moduleRadius(), Draw.lerp(cardColor, cardHoverColor, cardHover));
+                Draw.roundedOutline(g, hit.x, hit.y, hit.w, hit.h, moduleRadius(), 0.5f, 0x18ffffff);
                 String keyName = hit.module == binding ? "..." : hit.module.keyName();
                 float nameScale = 8.1f / 11;
                 int tagW = keyName.isEmpty() ? 0 : (int) Math.ceil(FigmaFont.width(keyName, 6.5f / 11)) + 5;
@@ -591,7 +587,6 @@ public final class ClickGuiScreen extends Screen {
                     if (clickable) settingHits.add(new SettingHit(b, (int)px, ry, (int)pw, rh, 0, 0));
                 }
                 case im.yaHustler.setting.KeySetting k -> {
-                    // Compact HUD key pill: sized to its label, "None" when unbound, "..." while listening.
                     boolean listening=k==actionBinding;
                     String keyText=listening?"...":FigmaFont.fitRegular(k.label(),54,6.5f/11);
                     int kw=Math.clamp((int)Math.ceil(FigmaFont.width(keyText,6.5f/11))+10,22,68);
@@ -646,7 +641,6 @@ public final class ClickGuiScreen extends Screen {
     }
     private boolean clickMenu(MouseButtonEvent event, boolean doubleClick) {
         double mx = event.x(), my = event.y();
-        // Outgoing content is visible but no longer actionable; navigation stays responsive.
         if (pendingView != null && Draw.inside(mx, my, contentX(), y + HEADER, contentWidth(), contentBottom() - y - HEADER)) return true;
         double pageMx = pageFrame.localX(mx), pageMy = pageFrame.localY(my);
         boolean left = event.button() == InputConstants.MOUSE_BUTTON_LEFT;
@@ -840,14 +834,12 @@ public final class ClickGuiScreen extends Screen {
         }
         if(actionBinding!=null) {
             int key=event.key();
-            // Esc / Delete / Backspace clear the binding.
             if(key==InputConstants.KEY_ESCAPE||key==InputConstants.KEY_DELETE||key==InputConstants.KEY_BACKSPACE)actionBinding.set(-1);
             else actionBinding.set(key);
             actionBinding=null;return true;
         }
         if (binding != null) {
             int key = event.key();
-            // Esc / Delete / Backspace clear the binding.
             if (key == InputConstants.KEY_ESCAPE || key == InputConstants.KEY_DELETE || key == InputConstants.KEY_BACKSPACE) binding.setKey(-1);
             else binding.setKey(key);
             binding = null;
