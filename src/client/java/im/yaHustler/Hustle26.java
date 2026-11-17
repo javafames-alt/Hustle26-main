@@ -85,6 +85,7 @@ public final class Hustle26 implements ClientModInitializer {
         MODULES.register(new im.yaHustler.module.impl.movement.Speed());
         MODULES.register(new im.yaHustler.module.impl.movement.ElytraTarget());
         MODULES.register(new FakePlayer());
+        MODULES.register(new SwingAnimations());
         MODULES.register(new im.yaHustler.module.impl.render.AspectRatio());
         var handShader = MODULES.register(new HandShader());
         ClientLifecycleEvents.CLIENT_STOPPING.register(client -> handShader.close());
@@ -111,10 +112,9 @@ public final class Hustle26 implements ClientModInitializer {
         var weather = MODULES.register(new im.yaHustler.module.impl.render.Weather(ambience));
         MODULES.hide(ambience);
         MODULES.register(new im.yaHustler.module.impl.render.JumpCircles());
-        // Replaced by the ported wyvern ClickGUI/HUD; the old screens stay reachable via the .oldgui chat command.
+        MODULES.register(new im.yaHustler.module.impl.render.ClickGui());
         MODULES.register(new Theme());
         Hud hud = MODULES.register(new Hud());
-        MODULES.hide(hud);
         PunchyBridge.initialize();
         SkinManager.initialize();
         ClientLifecycleEvents.CLIENT_STARTED.register(client -> SkinManager.refresh(true));
@@ -172,13 +172,12 @@ public final class Hustle26 implements ClientModInitializer {
             im.yaHustler.port.SilentComponent.finishDataSetTick(client.isPaused() ? null : client.player);
             im.yaHustler.module.impl.combat.aura.rotation.neuro.NeuroRotation.getInstance().recorder().tick();
             while (OPEN_GUI.consumeClick()) {
-                if (client.gui.screen() == null)
-                    im.yaHustler.wyvern.module.impl.client.ClickGuiModule.INSTANCE.toggle();
+                if (client.gui.screen() == null && client.player != null)
+                    client.gui.setScreen(new ClickGuiScreen(MODULES));
             }
             MODULES.handleKeys(client);
             SkinManager.tick(client);
         });
-        im.yaHustler.wyvern.Wyvern.INSTANCE.init(MODULES);
         LOGGER.info("Hustle 26.3 initialized: {} modules", MODULES.all().size());
     }
 }

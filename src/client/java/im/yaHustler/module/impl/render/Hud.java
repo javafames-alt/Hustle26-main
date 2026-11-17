@@ -103,25 +103,22 @@ public final class Hud extends Module {
     @Override public void tick(Minecraft client) { notificationsElement.tick(client); }
     public boolean replacesVanillaHotbar() { return enabled() && customHotbar.enabled(); }
     public void extractHotbar(GuiGraphicsExtractor g, DeltaTracker delta) { if(!NoRender.noHotbar() && !im.yaHustler.ui.GuiVisibility.hidesHud()) CustomHotbar.draw(g, Minecraft.getInstance()); }
-    public boolean replacesVanillaEffects() { return enabled() && potions.enabled() && !WYVERN_UI; }
-    /** The ported wyvern HUD renders Watermark/ArrayList/TargetHUD/KeyBinds/Cooldowns/Staff/Potions/Notifications itself;
-     *  the old elements below stay available for Armor, Totem, Coordinates, Music and the custom hotbar. */
-    private static final boolean WYVERN_UI = true;
+    public boolean replacesVanillaEffects() { return enabled() && potions.enabled(); }
     private List<HudElement> active() {
         active.clear();
         if (!enabled()) return active;
         if (armor.enabled()) active.add(armorElement);
-        if (!WYVERN_UI && staff.enabled()) active.add(staffElement);
-        if (!WYVERN_UI && notifications.enabled()) active.add(notificationsElement);
+        if (staff.enabled()) active.add(staffElement);
+        if (notifications.enabled()) active.add(notificationsElement);
         if (totem.enabled()) active.add(totemElement);
         if (coordinates.enabled()) active.add(coordinatesElement);
         if (music.enabled()) active.add(musicElement);
-        if (!WYVERN_UI && targetHud.enabled()) active.add(targetElement);
-        if (!WYVERN_UI && hotkeys.enabled()) active.add(hotkeysElement);
-        if (!WYVERN_UI && cooldowns.enabled()) active.add(cooldownsElement);
-        if (!WYVERN_UI && potions.enabled() && !NoRender.noEffectIcons()) active.add(potionsElement);
-        if (!WYVERN_UI && watermark.enabled()) active.add(watermarkElement);
-        if (!WYVERN_UI && arrayList.enabled()) active.add(arrayListElement);
+        if (targetHud.enabled()) active.add(targetElement);
+        if (hotkeys.enabled()) active.add(hotkeysElement);
+        if (cooldowns.enabled()) active.add(cooldownsElement);
+        if (potions.enabled() && !NoRender.noEffectIcons()) active.add(potionsElement);
+        if (watermark.enabled()) active.add(watermarkElement);
+        if (arrayList.enabled()) active.add(arrayListElement);
         return active;
     }
     public void extractRenderState(GuiGraphicsExtractor g, DeltaTracker delta) {
